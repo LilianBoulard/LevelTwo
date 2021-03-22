@@ -1,0 +1,7 @@
+# Exclude PyCharm
+*.idea/
+.idea/
+
+# Exclude cache dirs
+*.cache/
+.cache/
