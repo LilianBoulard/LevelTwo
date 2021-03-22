@@ -12,15 +12,18 @@ style = pygame.font.SysFont('Comic',50)
 
 running = True
 # timer = pygame.time.Clock()
-def Play():
+
+#Ecran de Labyrinthe
+def play():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     menu = pygame_menu.Menu(600, 600, 'LevelTwo',theme=pygame_menu.themes.THEME_SOLARIZED) #Fenetre Menu
     menu.add.button("Bienvenue" + " " + input.get_value(), Play) #Bouton Jouer
+    menu.add.button('Retour', display_menu) #Bouton Jouer
     pygame.display.set_caption('LevelTwo') #Titre Fenetre
     menu.mainloop(screen)
 
 #Affichage Ecran Menu Principal
-def displayMenu():
+def display_menu():
     global input
     screen = pygame.display.set_mode((WIDTH, HEIGHT)) #Creer la Fenetre selon paramètre
     menu = pygame_menu.Menu(600, 600, 'LevelTwo',theme=pygame_menu.themes.THEME_SOLARIZED) #Fenetre Menu
@@ -40,7 +43,7 @@ def displayMenu():
 
 
 while running:
-    displayMenu()
+    display_menu()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
