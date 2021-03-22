@@ -1,15 +1,17 @@
-from leveltwo.objects.generic import Object
-
 """
-mud : slowing the player
+Mud : slows the character when walked on.
 """
 
-class Mud(Object):
+from leveltwo.objects.generic import GenericObject
+from leveltwo.enums.effects import Effects
+
+
+class Mud(GenericObject):
     def __init__(self):
         name = "mud"
-        effect = "slow"
-        traversed = 1
-        appareance = "mud"
-        minInstances = 4
-        maxInstances = 10
-        super.__init__(name, effect, traversed, appareance, minInstances, maxInstances)
+        effect = Effects.SLOW
+        traversable = True
+        appearance = []
+        min_instances = 4
+        max_instances = 10
+        super().__init__(name, effect, traversable, appearance, min_instances, max_instances)
