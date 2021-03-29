@@ -6,7 +6,7 @@ from leveltwo.objects.generic import GenericObject
 from leveltwo.enums.effects import LevelEffects
 
 
-class Wall(GenericObject):
+class StartingPoint(GenericObject):
     def __init__(self):
         name = "start"
         effect = LevelEffects.NONE
