@@ -54,7 +54,47 @@ class Display:
         pass
 
     def create(self):
-        pass
+        pygame.init()
+        screen = pygame.display.set_mode((600,400))
+        pygame.display.set_caption("My first game")
+        clock = pygame.time.Clock()
+        
+        loop = True
+        press = False
+        class Cube:
+            def update(self):
+                self.cx, self.cy = pygame.mouse.get_pos()
+                self.square = pygame.Rect(self.cx, self.cy, 100, 50)
+            def vertical(self):
+                self.cx, self.cy = pygame.mouse.get_pos()
+                self.square = pygame.Rect(self.cx, self.cy, 50, 100)
+
+            def draw(self): 
+                pygame.draw.rect(screen, (255, 255, 255), self.square)
+        cube = Cube()
+        while loop:
+            try:
+                #pygame.mouse.set_visible(False)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        loop = False
+            
+                px, py = pygame.mouse.get_pos()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    cube.update()
+                    cube.draw()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    press == False
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+                    cube.vertical()
+                    cube.draw()
+                pygame.display.update()
+                clock.tick(1000)
+            except Exception as e:
+                print(e)
+                pygame.quit()
+                
+        pygame.quit()
 
     def display_menu(self):
 
