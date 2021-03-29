@@ -1,3 +1,4 @@
 sqlalchemy
 pygame
 pygame_menu
+numpy
