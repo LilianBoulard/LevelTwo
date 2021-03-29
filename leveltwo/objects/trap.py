@@ -3,13 +3,13 @@ Trap : Kills the player when walked on.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import Effects
+from leveltwo.enums.effects import PlayerEffects
 
 
 class Trap(GenericObject):
     def __init__(self):
         name = "trap"
-        effect = Effects.KILL
+        effect = PlayerEffects.KILL
         traversable = True
         appearance = []
         min_instances = 4

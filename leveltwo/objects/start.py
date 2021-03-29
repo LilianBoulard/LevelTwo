@@ -3,13 +3,13 @@ Start : beginning point of a level.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import Effects
+from leveltwo.enums.effects import LevelEffects
 
 
 class Wall(GenericObject):
     def __init__(self):
         name = "start"
-        effect = Effects.NONE
+        effect = LevelEffects.NONE
         traversable = True
         appearance = []
         min_instances = 1

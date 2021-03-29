@@ -3,13 +3,13 @@ Mud : slows the character when walked on.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import Effects
+from leveltwo.enums.effects import PlayerEffects
 
 
 class Mud(GenericObject):
     def __init__(self):
         name = "mud"
-        effect = Effects.SLOW
+        effect = PlayerEffects.SLOW
         traversable = True
         appearance = []
         min_instances = 4

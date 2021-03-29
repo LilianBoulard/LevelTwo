@@ -3,13 +3,13 @@ Arrival : ending point of a level.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import Effects
+from leveltwo.enums.effects import LevelEffects
 
 
 class ArrivalPoint(GenericObject):
     def __init__(self):
         name = "arrival"
-        effect = Effects.FINISH
+        effect = LevelEffects.FINISH
         traversable = True
         appearance = []
         min_instances = 1

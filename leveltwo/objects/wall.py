@@ -3,13 +3,13 @@ Wall : the character can't go past this obstacle.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import Effects
+from leveltwo.enums.effects import LevelEffects
 
 
 class Wall(GenericObject):
     def __init__(self):
         name = "wall"
-        effect = Effects.NONE
+        effect = LevelEffects.STOP
         traversable = False
         appearance = []
         min_instances = 4
