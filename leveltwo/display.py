@@ -1,18 +1,12 @@
-import os
-import time
-
 import pygame
 import pygame_menu
+
+from leveltwo.maze import Maze
 
 from typing import Tuple
 
 
 pygame.init()
-
-# Screen settings
-screen_width = 960
-screen_height = 540
-screen_size = (screen_width, screen_height)
 # Set font
 style = pygame.font.SysFont('calibri', 50)
 
@@ -54,52 +48,12 @@ class Display:
         pass
 
     def create(self):
-        pygame.init()
-        screen = pygame.display.set_mode((600,400))
-        pygame.display.set_caption("My first game")
-        clock = pygame.time.Clock()
-        
-        loop = True
-        press = False
-        class Cube:
-            def update(self):
-                self.cx, self.cy = pygame.mouse.get_pos()
-                self.square = pygame.Rect(self.cx, self.cy, 100, 50)
-            def vertical(self):
-                self.cx, self.cy = pygame.mouse.get_pos()
-                self.square = pygame.Rect(self.cx, self.cy, 50, 100)
-
-            def draw(self): 
-                pygame.draw.rect(screen, (255, 255, 255), self.square)
-        cube = Cube()
-        while loop:
-            try:
-                #pygame.mouse.set_visible(False)
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        loop = False
-            
-                px, py = pygame.mouse.get_pos()
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    cube.update()
-                    cube.draw()
-                if event.type == pygame.MOUSEBUTTONUP:
-                    press == False
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                    cube.vertical()
-                    cube.draw()
-                pygame.display.update()
-                clock.tick(1000)
-            except Exception as e:
-                print(e)
-                pygame.quit()
-                
-        pygame.quit()
+        maze = Maze()
+        maze.run()
 
     def display_menu(self):
 
         def on_selector_change(struct: tuple, selection: int):
-            print(struct, selection)
             self.level_selected = selection
 
         screen = self.get_screen()
@@ -126,11 +80,3 @@ class Display:
 
         pygame.display.set_caption('LevelTwo')
         menu.mainloop(screen)
-
-
-display = Display(screen_size)
-while display.running:
-    display.display_menu()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            display.running = False

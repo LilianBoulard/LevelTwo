@@ -3,8 +3,6 @@ import numpy as np
 
 from leveltwo.enums import Objects
 
-from typing import Tuple
-
 pygame.init()
 style = pygame.font.SysFont('calibri', 50)
 
@@ -76,7 +74,7 @@ class Maze:
                 cells[i_x, i_y] = cell
                 # Draw the rectangle.
                 rect = pygame.Rect(x, y, z, z)
-                pygame.draw.rect(self.screen, BLACK, rect, width=0)
+                pygame.draw.rect(self.screen, BLACK, rect, width=1)
         return cells
 
     def get_clicked_cell(self, x: int, y: int, cells: np.array) -> Cell or None:
