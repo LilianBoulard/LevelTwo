@@ -17,5 +17,20 @@ It aims at exploring:
 - Julien CHIGOT
 - Rafaël METAYER
 
+## Usage
+
+To clone the git repository, use the git command
+
+    git clone https://github.com/LilianBoulard/LevelTwo
+
+Then, `cd` into the `LevelTwo` directory, and install the requirements with 
+
+    pip install -r requirements.txt
+
+*Note: we advise you use a virtual environment for this*
+
+Finally, launch `run.py` !
+
+## Organization
 
 Trello board : https://trello.com/b/lN0r08OH/leveltwo
