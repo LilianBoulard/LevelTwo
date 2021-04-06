@@ -49,8 +49,8 @@ class Display:
 
     def create(self):
         maze = MazeEditable(parent_display=self,
-                    screen_size=min(self.screen_size),
-                    side_cells_count=15)
+                            screen_size=self.screen_size,
+                            side_cells_count=15)
         maze.run()
         self.get_screen()
 

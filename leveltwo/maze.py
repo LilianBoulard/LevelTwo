@@ -1,7 +1,10 @@
 import pygame
 import numpy as np
 
+from typing import Tuple
+
 from leveltwo.enums import Objects
+from leveltwo.utils import calc_tuple
 
 pygame.init()
 style = pygame.font.SysFont('calibri', 50)
@@ -10,6 +13,10 @@ style = pygame.font.SysFont('calibri', 50)
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 BROWN = (165, 42, 42)
+
+# Toolbox settings
+toolbox_size = (200, 0)
+
 
 class Cell:
 
@@ -42,34 +49,50 @@ class Cell:
 
 class Maze:
 
-    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
+    def __init__(self, parent_display, screen_size: Tuple[int, int], side_cells_count: int):
         self.parent = parent_display
-        self.screen_size = screen_size
+        self.screen_size = calc_tuple(int.__add__, self.squarify(screen_size), toolbox_size)
         self.side_cells_count = side_cells_count
-        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
         self.screen.fill(WHITE)  # Set the background color
         self._running = True
         pygame.display.set_caption("Level")
 
+    def squarify(self, size: Tuple[int, ...]) -> Tuple[int, ...]:
+        """
+        "squarifies" a tuple of integers.
+        Example:
+        >>> self.squarify((1920, 1080))
+        (1080, 1080)
+        """
+        m = min(size)
+        return tuple(m for _ in range(len(size)))
+
     def resize(self, x: int, y: int):
-        self.screen_size = max(x, y)
+        """
+        Resizes PyGame's window.
+        """
+        self.screen_size = (x, y)
         self.draw_grid()
 
     def draw_grid(self) -> np.array:
         """
         Constructs the maze's grid.
         """
-        # Compute the size each cell has on the screen (number of pixels).
+        # Compute `z`, the size each cell has on the screen (number of pixels).
         # Using a round division might produce some unwanted pixel lines along the window's edges.
         # A further version might implement the auto-resizing of the window if
         # the standard division does not produce a round integer.
-        z = self.screen_size // self.side_cells_count
+        grid_size = calc_tuple(int.__sub__, self.screen_size, toolbox_size)
+        z = max(grid_size) // self.side_cells_count
         # Create a numpy array that will act as a matrix, in which we will store the cells.
         cells = np.empty((self.side_cells_count, self.side_cells_count), dtype='object')
-        for i_x, x in enumerate(range(0, self.screen_size, z)):  # Along the x axis
-            for i_y, y in enumerate(range(0, self.screen_size, z)):  # Along the y axis
+        for i_x in range(self.side_cells_count):  # Along the x axis
+            for i_y in range(self.side_cells_count):  # Along the y axis
                 # Create the cell stored in this location.
                 # This information is usually read from the database.
+                x = i_x * z
+                y = i_y * z
                 cell = Cell(Objects.EMPTY,
                             origin_x=x,
                             origin_y=y,
@@ -117,29 +140,17 @@ class Maze:
                     self.resize(event.w, event.h)
             pygame.display.update()
 
+
 class MazeDisplay(Maze):
-    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
-        self.parent = parent_display
-        self.screen_size = screen_size
-        self.side_cells_count = side_cells_count
-        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
-        self.screen.fill(WHITE)  # Set the background color
-        self._running = True
+    pass
+
 
 class MazeEditable(Maze):
-    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
-        self.parent = parent_display
-        self.screen_size = screen_size
-        self.side_cells_count = side_cells_count
-        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
-        self.screen.fill(WHITE)  # Set the background color
-        self._running = True
 
     def run(self) -> None:
         """
         Main loop.
         """
-        z = self.screen_size // self.side_cells_count
         cells = self.draw_grid()
         while self._running:
             for event in pygame.event.get():
@@ -157,8 +168,8 @@ class MazeEditable(Maze):
                     if not clicked_cell:
                         continue
                     clicked_cell.object_type = Objects.TRAP
-                    rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, clicked_cell.end_x, clicked_cell.end_y)
-                    print(z)
+                    z = clicked_cell.end_x - clicked_cell.origin_x
+                    rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                     pygame.draw.rect(self.screen, BROWN, rect, width=1)
                     print(vars(clicked_cell))
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
