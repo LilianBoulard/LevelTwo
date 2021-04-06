@@ -1,0 +1,52 @@
+# Database
+
+We use an SQL (relational) database, which will be used to store information relative to the project.
+
+## Structure
+
+It contains four tables:
+
+
+### ``objects``
+
+- Goal: hold information about the objects of the game
+- 6 columns:
+  1. ``id`` - primary identifier
+  2. ``name`` - the name of the level. It will be used to gather its sprite in the ``objects_sprites`` table
+  3. ``effect`` - an integer linked to an enumerator, indicating which effect it has on the player
+  4. ``traversable`` - a boolean indicating whether a character can pass through
+  5. ``min_instances`` - how many instances can there be at least in a single level
+  6. ``max_instances`` - how many instances can there be at most in a single level
+
+
+### ``objects_sprites``
+
+- Goal: contain a data structure capable of storing sprites (images)
+- 5 columns:
+  1. ``id`` - primary identifier
+  2. ``name`` - the name of the object it belongs to
+  3. ``pos_x`` - the `x` coordinate of the pixel
+  4. ``pos_y`` - the `y` coordinate of the pixel
+  5. ``value`` - the value of the pixel, usually a string of three (RGB) or four (RGBA) values.
+
+
+### ``levels``
+
+- Goal: hold information about each level
+- columns:
+  1. ``id`` - primary identifier
+  2. ``name`` - the name of the level. It will be used to gather its content in the ``levels_content`` table
+  3. ``author`` - the author name, as a string
+  4. ``creation_date`` - a UNIX timestamp of the date the level was submitted
+  5. ``last_modification_date`` - a UNIX timestamp of the date the level was last modified
+
+
+### ``levels_content``
+
+- Goal: contain a data structure capable of storing the content of each level
+- 5 columns:
+  1. ``id`` - primary identifier
+  2. ``name`` - the name of the level it belongs to
+  3. ``pos_x`` - the `x` coordinate of the cell
+  4. ``pos_y`` - the `y` coordinate of the cell
+  5. ``value`` - the value of the cell: an integer linked to the id of the object, from the ``objects`` database
