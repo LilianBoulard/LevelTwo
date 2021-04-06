@@ -7,4 +7,4 @@ screen_size = (screen_width, screen_height)
 
 if __name__ == "__main__":
     display = leveltwo.Display(screen_size)
-    display.run()
+    display.display_menu()

@@ -1,9 +1,10 @@
 import pygame
 import pygame_menu
 
-from leveltwo.maze import Maze
+from leveltwo.maze import Maze, MazeDisplay, MazeEditable
 
 from typing import Tuple
+
 
 pygame.init()
 # Set font
@@ -27,26 +28,13 @@ class Display:
         self.screen_size = screen_size
         self.theme: pygame_menu.themes.Theme = pygame_menu.themes.THEME_SOLARIZED
         self.level_selected = 0
-        self._running = True
+        self.running = True
 
-    def run(self) -> None:
-        while self._running:
-            self.display_menu()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self._running = False
-                if event.type == pygame.VIDEORESIZE:
-                    self.resize(event.w, event.h)
-            pygame.display.update()
-
-    def set_theme(self, new_theme: pygame_menu.themes.Theme) -> None:
+    def set_theme(self, new_theme: pygame_menu.themes.Theme):
         self.theme = new_theme
 
     def get_screen(self):
-        return pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
-
-    def resize(self, x: int, y: int) -> None:
-        self.screen_size = (x, y)
+        return pygame.display.set_mode(self.screen_size)
 
     def play(self, user_input):
         screen = self.get_screen()
@@ -60,11 +48,11 @@ class Display:
         pass
 
     def create(self):
-        maze = Maze(parent_display=self,
+        maze = MazeEditable(parent_display=self,
                     screen_size=min(self.screen_size),
                     side_cells_count=15)
         maze.run()
-        screen = self.get_screen()
+        self.get_screen()
 
     def display_menu(self):
 

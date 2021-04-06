@@ -9,7 +9,7 @@ style = pygame.font.SysFont('calibri', 50)
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
-
+BROWN = (165, 42, 42)
 
 class Cell:
 
@@ -112,6 +112,54 @@ class Maze:
                     clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
                     if not clicked_cell:
                         continue
+                    print(vars(clicked_cell))
+                if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
+                    self.resize(event.w, event.h)
+            pygame.display.update()
+
+class MazeDisplay(Maze):
+    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
+        self.parent = parent_display
+        self.screen_size = screen_size
+        self.side_cells_count = side_cells_count
+        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
+        self.screen.fill(WHITE)  # Set the background color
+        self._running = True
+
+class MazeEditable(Maze):
+    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
+        self.parent = parent_display
+        self.screen_size = screen_size
+        self.side_cells_count = side_cells_count
+        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
+        self.screen.fill(WHITE)  # Set the background color
+        self._running = True
+
+    def run(self) -> None:
+        """
+        Main loop.
+        """
+        z = self.screen_size // self.side_cells_count
+        cells = self.draw_grid()
+        while self._running:
+            for event in pygame.event.get():
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                if event.type == pygame.QUIT:
+                    self._running = False
+                    break
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # If the mouse was clicked.
+                    clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
+                    if not clicked_cell:
+                        continue
+                    print(vars(clicked_cell))
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+                    clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
+                    if not clicked_cell:
+                        continue
+                    clicked_cell.object_type = Objects.TRAP
+                    rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, clicked_cell.end_x, clicked_cell.end_y)
+                    print(z)
+                    pygame.draw.rect(self.screen, BROWN, rect, width=1)
                     print(vars(clicked_cell))
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
                     self.resize(event.w, event.h)
