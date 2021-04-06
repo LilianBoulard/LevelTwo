@@ -50,6 +50,7 @@ class Display:
     def create(self):
         maze = Maze()
         maze.run()
+        screen = self.get_screen()
 
     def display_menu(self):
 
