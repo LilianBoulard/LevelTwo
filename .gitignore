@@ -5,3 +5,9 @@
 # Exclude cache dirs
 *.cache/
 .cache/
+
+# Exclude Python cache
+*__pycache__/
+__pycache__/
+
+
