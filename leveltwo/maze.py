@@ -8,11 +8,14 @@ from leveltwo.utils import calc_tuple
 
 pygame.init()
 style = pygame.font.SysFont('calibri', 50)
+label = pygame.font.SysFont('calibri', 20)
 
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
-BROWN = (165, 42, 42)
+BROWN = (222,184,135)
+GREEN = (0,128,0)
+RED = (128,0,0)
 
 # Toolbox settings
 toolbox_size = (200, 0)
@@ -41,7 +44,7 @@ class Cell:
         :param int y:
         :return bool: True if they are, False otherwise.
         """
-        return self.origin_x < x < self.end_x and self.origin_y < y < self.end_y
+        return self.origin_x < x <= self.end_x and self.origin_y < y <= self.end_y
 
     def get_sprite(self):
         pass
@@ -151,6 +154,42 @@ class MazeEditable(Maze):
         """
         Main loop.
         """
+        #Drawing ToolBox
+        #Trap
+        trap_label = label.render("Piège", 1, BLACK) 
+        trap = pygame.Rect(580,50,trap_label.get_width(),trap_label.get_height())
+        pygame.draw.rect(self.screen, BROWN, trap)
+        self.screen.blit(trap_label, (580, 50))
+        #Wall
+        wall_label = label.render("Mur", 1, WHITE) 
+        wall = pygame.Rect(580,100,wall_label.get_width(),wall_label.get_height())
+        pygame.draw.rect(self.screen, BLACK, wall)
+        self.screen.blit(wall_label, (580, 100))
+        
+        #Start
+        start_label = label.render("Start", 1, BLACK) 
+        start = pygame.Rect(580,150,start_label.get_width(),start_label.get_height())
+        pygame.draw.rect(self.screen, GREEN, start)
+        self.screen.blit(start_label, (580, 150))
+
+        #Arrival
+        arrival_label = label.render("Arrival", 1, BLACK) 
+        arrival = pygame.Rect(580,200,arrival_label.get_width(),arrival_label.get_height())
+        pygame.draw.rect(self.screen, RED, arrival)
+        self.screen.blit(arrival_label, (580, 200))
+
+        #Empty
+        empty_label = label.render("Couloir", 1, BLACK) 
+        empty = pygame.Rect(580,250,empty_label.get_width(),empty_label.get_height())
+        pygame.draw.rect(self.screen, WHITE, empty)
+        self.screen.blit(empty_label, (580, 250))
+
+        #Mud
+        mud_label = label.render("Mud", 1, BLACK) 
+        mud = pygame.Rect(580,300,mud_label.get_width(),mud_label.get_height())
+        pygame.draw.rect(self.screen, BROWN, mud)
+        self.screen.blit(mud_label, (580, 300))
+
         cells = self.draw_grid()
         while self._running:
             for event in pygame.event.get():
@@ -158,20 +197,50 @@ class MazeEditable(Maze):
                 if event.type == pygame.QUIT:
                     self._running = False
                     break
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # If the mouse was clicked.
-                    clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
-                    if not clicked_cell:
-                        continue
-                    print(vars(clicked_cell))
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                    clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
-                    if not clicked_cell:
-                        continue
-                    clicked_cell.object_type = Objects.TRAP
-                    z = clicked_cell.end_x - clicked_cell.origin_x
-                    rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
-                    pygame.draw.rect(self.screen, BROWN, rect, width=1)
-                    print(vars(clicked_cell))
+                if 540 < mouse_x < 740 and 0 < mouse_y < 540:   
+                    if trap.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 1
+                        print(choix)
+                    elif wall.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 2
+                        print(choix)
+                    elif start.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 3
+                        print(choix)
+                    elif arrival.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 4
+                        print(choix)
+                    elif empty.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 5
+                        print(choix)
+                    elif mud.collidepoint((mouse_x,mouse_y)) and event.type == pygame.MOUSEBUTTONDOWN:
+                        choix = 6
+                        print(choix)
+                if 0 < mouse_x < 540 and 0 < mouse_y < 540: 
+                    if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
+                        clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
+                        z = clicked_cell.end_x - clicked_cell.origin_x
+                        if not clicked_cell:
+                            continue
+                        print(vars(clicked_cell))
+                        if choix == 1:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, BROWN, rect)
+                        elif choix == 2:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, BLACK, rect)
+                        elif choix == 3:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, GREEN, rect)
+                        elif choix == 4:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, RED, rect)
+                        elif choix == 5:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, WHITE, rect)
+                        elif choix == 6:
+                            rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
+                            pygame.draw.rect(self.screen, BROWN, rect)    
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
                     self.resize(event.w, event.h)
             pygame.display.update()
