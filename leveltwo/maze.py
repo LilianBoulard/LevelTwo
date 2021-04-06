@@ -6,9 +6,7 @@ from leveltwo.enums import Objects
 pygame.init()
 style = pygame.font.SysFont('calibri', 50)
 
-# Testing settings
-screen_size: int = 600
-maze_side_length: int = 12
+# Define colors
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 
@@ -44,11 +42,18 @@ class Cell:
 
 class Maze:
 
-    def __init__(self):
-        self.screen = pygame.display.set_mode((screen_size, screen_size))
-        self.screen.fill(WHITE)
+    def __init__(self, parent_display, screen_size: int, side_cells_count: int):
+        self.parent = parent_display
+        self.screen_size = screen_size
+        self.side_cells_count = side_cells_count
+        self.screen = pygame.display.set_mode((screen_size, screen_size), pygame.RESIZABLE)
+        self.screen.fill(WHITE)  # Set the background color
         self._running = True
         pygame.display.set_caption("Level")
+
+    def resize(self, x: int, y: int):
+        self.screen_size = max(x, y)
+        self.draw_grid()
 
     def draw_grid(self) -> np.array:
         """
@@ -58,11 +63,11 @@ class Maze:
         # Using a round division might produce some unwanted pixel lines along the window's edges.
         # A further version might implement the auto-resizing of the window if
         # the standard division does not produce a round integer.
-        z = screen_size // maze_side_length
+        z = self.screen_size // self.side_cells_count
         # Create a numpy array that will act as a matrix, in which we will store the cells.
-        cells = np.empty((maze_side_length, maze_side_length), dtype='object')
-        for i_x, x in enumerate(range(0, screen_size, z)):  # Along the x axis
-            for i_y, y in enumerate(range(0, screen_size, z)):  # Along the y axis
+        cells = np.empty((self.side_cells_count, self.side_cells_count), dtype='object')
+        for i_x, x in enumerate(range(0, self.screen_size, z)):  # Along the x axis
+            for i_y, y in enumerate(range(0, self.screen_size, z)):  # Along the y axis
                 # Create the cell stored in this location.
                 # This information is usually read from the database.
                 cell = Cell(Objects.EMPTY,
@@ -100,8 +105,14 @@ class Maze:
         while self._running:
             for event in pygame.event.get():
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
-                    print(vars(self.get_clicked_cell(mouse_x, mouse_y, cells)))
                 if event.type == pygame.QUIT:
                     self._running = False
+                    break
+                if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
+                    clicked_cell = self.get_clicked_cell(mouse_x, mouse_y, cells)
+                    if not clicked_cell:
+                        continue
+                    print(vars(clicked_cell))
+                if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
+                    self.resize(event.w, event.h)
             pygame.display.update()
