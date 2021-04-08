@@ -6,8 +6,14 @@
 *.cache/
 .cache/
 
+# Exclude virtual environment
+*venv/
+venv/
+
 # Exclude Python cache
 *__pycache__/
 __pycache__/
 
+# Exclude databases
+*.db
 
