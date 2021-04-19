@@ -45,7 +45,12 @@ class Display:
         menu.mainloop(screen)
 
     def edit(self):
-        pass
+        # GET MAZE FROM DB
+        maze = MazeEditable(parent_display=self,
+                            screen_size=self.screen_size,
+                            side_cells_count=15)
+        maze.run()
+        self.get_screen()
 
     def create(self):
         maze = MazeEditable(parent_display=self,

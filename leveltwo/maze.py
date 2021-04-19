@@ -155,40 +155,46 @@ class MazeEditable(Maze):
         Main loop.
         """
         #Drawing ToolBox
+        #Title
+        menu_label = label.render("ToolBox",1,BLACK)
+        self.screen.blit(menu_label,(610,5))
+        indic_label = label.render("Cliquez et Placez",1,BLACK)
+        self.screen.blit(indic_label,(570,25))
+
         #Trap
         trap_label = label.render("Piège", 1, BLACK) 
-        trap = pygame.Rect(580,50,trap_label.get_width(),trap_label.get_height())
+        trap = pygame.Rect(610,50,trap_label.get_width(),trap_label.get_height())
         pygame.draw.rect(self.screen, BROWN, trap)
-        self.screen.blit(trap_label, (580, 50))
+        self.screen.blit(trap_label, (610, 50))
         #Wall
         wall_label = label.render("Mur", 1, WHITE) 
-        wall = pygame.Rect(580,100,wall_label.get_width(),wall_label.get_height())
+        wall = pygame.Rect(610,100,wall_label.get_width(),wall_label.get_height())
         pygame.draw.rect(self.screen, BLACK, wall)
-        self.screen.blit(wall_label, (580, 100))
+        self.screen.blit(wall_label, (610, 100))
         
         #Start
         start_label = label.render("Start", 1, BLACK) 
-        start = pygame.Rect(580,150,start_label.get_width(),start_label.get_height())
+        start = pygame.Rect(610,150,start_label.get_width(),start_label.get_height())
         pygame.draw.rect(self.screen, GREEN, start)
-        self.screen.blit(start_label, (580, 150))
+        self.screen.blit(start_label, (610, 150))
 
         #Arrival
         arrival_label = label.render("Arrival", 1, BLACK) 
-        arrival = pygame.Rect(580,200,arrival_label.get_width(),arrival_label.get_height())
+        arrival = pygame.Rect(610,200,arrival_label.get_width(),arrival_label.get_height())
         pygame.draw.rect(self.screen, RED, arrival)
-        self.screen.blit(arrival_label, (580, 200))
+        self.screen.blit(arrival_label, (610, 200))
 
         #Empty
         empty_label = label.render("Couloir", 1, BLACK) 
-        empty = pygame.Rect(580,250,empty_label.get_width(),empty_label.get_height())
+        empty = pygame.Rect(610,250,empty_label.get_width(),empty_label.get_height())
         pygame.draw.rect(self.screen, WHITE, empty)
-        self.screen.blit(empty_label, (580, 250))
+        self.screen.blit(empty_label, (610, 250))
 
         #Mud
         mud_label = label.render("Mud", 1, BLACK) 
-        mud = pygame.Rect(580,300,mud_label.get_width(),mud_label.get_height())
+        mud = pygame.Rect(610,300,mud_label.get_width(),mud_label.get_height())
         pygame.draw.rect(self.screen, BROWN, mud)
-        self.screen.blit(mud_label, (580, 300))
+        self.screen.blit(mud_label, (610, 300))
 
         cells = self.draw_grid()
         while self._running:
