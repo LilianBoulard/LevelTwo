@@ -12,46 +12,6 @@ from leveltwo.enums.effects import LevelEffects, PlayerEffects
 from enum import Enum
 
 
-sprite_struct = List[Tuple[int, int, int, int]]
-sprite_sep = ', '  # Separator
-
-
-def read_sprite(sprite: str) -> sprite_struct:
-    """
-    Takes a sprite serialized as a string, and returns a list of tuples (pixels).
-    :param str sprite:
-    :return sprite_struct:
-    """
-    sprite_list = sprite.split(sprite_sep)
-    # We check if the remainder of the modulo by 4 is 0.
-    # 4 because we have 4 values per pixel: Red, Green, Blue, Alpha.
-    # See `docs/sprite_data_representation.md`.
-    if not len(sprite_list) % 4 == 0:
-        raise ValueError("Sprite's length should be divisible by 4.")
-
-    # Then, we group the values to get the list of pixels.
-    pixels: sprite_struct = []
-    offset = 0
-    for _ in range(len(sprite_list) // 4):
-        r, g, b, a = [int(i) for i in sprite_list[offset:offset + 4]]
-        pixels.append((r, g, b, a))
-        offset += 4
-
-    return pixels
-
-
-def serialize_sprite(sprite: sprite_struct) -> str:
-    flat_pixels: List[str] = []
-    for pixel in sprite:
-        flat_pixel = sprite_sep.join([str(v) for v in pixel])
-        flat_pixels.append(flat_pixel)
-
-    # Or as a comprehension:
-    # return sprite_sep.join([sprite_sep.join([str(v) for v in pixel]) for pixel in I])
-
-    return sprite_sep.join(flat_pixels)
-
-
 class GenericObject:
 
     """
@@ -85,7 +45,7 @@ class GenericObject:
         If the type of the variables are not passed as mentioned above.
 
     ValueError
-        If appearance is not a `x * x` matrix (x being an integer).
+        If appearance is not a `x * x` matrix (`x` being an integer).
 
     """
 
@@ -95,7 +55,8 @@ class GenericObject:
                  traversable: bool,
                  appearance: list,
                  min_instances: int,
-                 max_instances: int):
+                 max_instances: int,
+                 **kwargs):
 
         # Check types are valid.
         if not isinstance(name, str) \
@@ -112,13 +73,26 @@ class GenericObject:
         self.appearance = appearance
         self.min_instances = min_instances
         self.max_instances = max_instances
-        self.sprite = self._compute_sprite()
+        self.sprite = self.read_sprite()
 
-    def _compute_sprite(self) -> np.array:
-        guessed_x = floor(sqrt(len(self.appearance)))
-        computed_size = guessed_x ** 2
-        if computed_size != len(self.appearance):
-            raise ValueError(f"Invalid size found: computed {computed_size}, expected {len(self.appearance)}")
-        array = np.array(self.appearance)  # Convert to numpy array.
-        array.resize((guessed_x, guessed_x))  # Resize to a 2D matrix.
-        return array
+        # Setting additional arguments as attributes.
+        for key, value in kwargs.items():
+            self.__setattr__(key, value)
+
+    @classmethod
+    def from_dbo(cls, dbo):
+        """
+        Takes a database object coming straight from SQLAlchemy,
+        and creates a new generic object with its attributes.
+        """
+        obj = cls(
+            name=dbo.name,
+            effect=dbo,
+            traversable=dbo.traversable,
+            appearance=None, # TODO
+            min_instances=dbo.min_instances,
+            max_instances=dbo.max_instances
+        )
+
+    def read_sprite(self):
+        pass

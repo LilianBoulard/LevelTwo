@@ -1,17 +1,17 @@
 """
-Arrival : ending point of a level.
+Empty: Default object, doesn't do anything special.
 """
 
 from leveltwo.objects.generic import GenericObject
-from leveltwo.enums.effects import LevelEffects
+from leveltwo.enums.effects import PlayerEffects
 
 
-class ArrivalPoint(GenericObject):
+class Empty(GenericObject):
     def __init__(self, **kwargs):
-        name = "arrival"
-        effect = LevelEffects.FINISH
+        name = "empty"
+        effect = PlayerEffects.NONE
         traversable = True
         appearance = []
-        min_instances = 1
-        max_instances = 1
+        min_instances = 10
+        max_instances = 1000
         super().__init__(name, effect, traversable, appearance, min_instances, max_instances, **kwargs)
