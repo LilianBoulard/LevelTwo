@@ -1,3 +1,9 @@
+"""
+Implements utility functions.
+"""
+
+from time import time
+from math import floor
 from typing import Tuple
 
 
@@ -15,6 +21,13 @@ def string_to_list(s: str) -> list:
     :return list: The actual list.
     """
     return s.split(', ')
+
+
+def get_timestamp() -> int:
+    """
+    Returns the current time, as a UNIX timestamp.
+    """
+    return floor(time())
 
 
 def calc_tuple(operator, first_tuple: Tuple[int, ...], second_tuple: Tuple[int, ...]):
