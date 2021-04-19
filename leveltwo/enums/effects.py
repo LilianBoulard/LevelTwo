@@ -1,5 +1,5 @@
 """
-Lists effects that can be applied to the character.
+Lists effects that can be applied.
 """
 
 from enum import Enum
