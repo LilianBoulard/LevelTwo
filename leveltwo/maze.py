@@ -226,21 +226,27 @@ class MazeEditable(Maze):
                         if choix == 1:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, BROWN, rect)
+                            clicked_cell.object_type = Objects.TRAP
                         elif choix == 2:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, BLACK, rect)
+                            clicked_cell.object_type = Objects.WALL
                         elif choix == 3:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, GREEN, rect)
+                            clicked_cell.object_type = Objects.START
                         elif choix == 4:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, RED, rect)
+                            clicked_cell.object_type = Objects.ARRIVAL
                         elif choix == 5:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, WHITE, rect)
+                            clicked_cell.object_type = Objects.EMPTY
                         elif choix == 6:
                             rect = pygame.Rect(clicked_cell.origin_x, clicked_cell.origin_y, z, z)
                             pygame.draw.rect(self.screen, BROWN, rect)    
+                            clicked_cell.object_type = Objects.MUD
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
                     self.resize(event.w, event.h)
             pygame.display.update()
