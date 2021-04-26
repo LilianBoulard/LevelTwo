@@ -14,11 +14,11 @@ def insert_levels_content(db) -> None:
     def level_to_dbo_level(generic_level: GenericLevel) -> List[LevelContentDBO]:
         all_cells_dbo = []
         level_id = generic_level.identifier
-        for pos_x in generic_level.content:
-            for pos_y, value in enumerate(pos_x):
+        for pos_x, val in enumerate(generic_level.content):
+            for pos_y, value in enumerate(val):
                 pos_x = pos_x
                 pos_y = pos_y
-                value = value
+                value = int(value)
                 cell_dbo = LevelContentDBO(level_id=level_id,
                                            pos_x=pos_x,
                                            pos_y=pos_y,

@@ -123,11 +123,13 @@ class Database:
 
         def get_content(identifier: int) -> List[GenericLevelContent]:
             with self.init_session() as session:
-                q = session.query(LevelContentDBO).filter_by(level_id=identifier).all()
+                q = session.query(LevelContentDBO).all()
                 content = [
-                    GenericLevelContent(level_id=identifier, x=row.x, y=row.y, value=row.value)
+                    GenericLevelContent(level_id=identifier, x=row.pos_x, y=row.pos_y, value=row.value)
                     for row in q
                 ]
+                for cell in content:
+                    print(vars(cell))
             return content
 
         with self.init_session() as session:
