@@ -47,7 +47,7 @@ class Display:
     def edit(self):
         # Get level from database
         db = Database()
-        level = db.construct_level(0)
+        level = db.construct_level(1)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
@@ -55,7 +55,7 @@ class Display:
     def create(self):
         # Get level from database
         db = Database()
-        level = db.construct_level(0)
+        level = db.construct_level(1)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
