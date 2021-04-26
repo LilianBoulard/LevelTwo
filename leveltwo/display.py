@@ -27,8 +27,9 @@ class Display:
     def __init__(self, screen_size: Tuple[int, int]):
         self.screen_size = screen_size
         self.theme: pygame_menu.themes.Theme = pygame_menu.themes.THEME_SOLARIZED
-        self.level_selected = 0
+        self.level_selected = 1  # 1-indexed
         self.running = True
+        self.db = Database()
 
     def set_theme(self, new_theme: pygame_menu.themes.Theme):
         self.theme = new_theme
@@ -46,16 +47,14 @@ class Display:
 
     def edit(self):
         # Get level from database
-        db = Database()
-        level = db.construct_level(1)
+        level = self.db.construct_level(self.level_selected)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
 
     def create(self):
         # Get level from database
-        db = Database()
-        level = db.construct_level(1)
+        level = self.db.construct_level(self.level_selected)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
@@ -64,17 +63,17 @@ class Display:
 
         def on_selector_change(struct: tuple, selection: int):
             self.level_selected = selection
+            print(selection)
 
         screen = self.get_screen()
         menu = pygame_menu.Menu('LevelTwo', *self.screen_size, theme=self.theme)
         user_input = menu.add.text_input('Name :', default='')
 
         # Level selector
-        menu.add.selector('Level selected: ', [
-            ('Random level', 0),
-            ('First level', 1),
-            ('Second level', 2),
-        ], onchange=on_selector_change)
+        all_levels = self.db.get_all_levels()
+        menu.add.selector('Level selected: ',
+                          [(level.name, level.identifier) for level in all_levels],
+                          onchange=on_selector_change)
 
         play_args = [user_input]  # Positional args to be passed to the callback below.
         menu.add.button('Play', self.play, *play_args)
