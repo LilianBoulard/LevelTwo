@@ -18,6 +18,8 @@ def insert_all() -> None:
     insert_levels()
     insert_levels_content()
 
+    db.print_tables_counts()
+
 
 if __name__ == "__main__":
     insert_all()

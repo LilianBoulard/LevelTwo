@@ -2,28 +2,13 @@
 Inserts the content of the example level into the database.
 """
 
-import numpy as np
-
 from typing import List
-from datetime import datetime
+
+from .default_levels import example_level
 
 from .. import Database
 from .. import LevelContentDBO
-from ... import GenericLevel
-
-
-example_level_content = np.array([[6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-                                  [6, 2, 2, 5, 6, 2, 6, 6, 6, 6],
-                                  [6, 2, 6, 6, 2, 2, 2, 6, 1, 6],
-                                  [6, 2, 2, 6, 2, 6, 2, 6, 2, 6],
-                                  [6, 6, 2, 6, 2, 6, 2, 5, 2, 6],
-                                  [6, 6, 2, 6, 2, 3, 3, 6, 2, 6],
-                                  [6, 2, 2, 6, 2, 6, 2, 2, 3, 6],
-                                  [6, 2, 6, 2, 2, 6, 6, 2, 2, 6],
-                                  [6, 2, 2, 2, 5, 2, 2, 6, 6, 6],
-                                  [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]])
-example_level = GenericLevel(0, 'Example maze', 'LevelTwoTeam', example_level_content,
-                             datetime.utcfromtimestamp(1619433467), datetime.utcfromtimestamp(1619433745))
+from ...level import GenericLevel
 
 
 def insert_levels_content() -> None:
