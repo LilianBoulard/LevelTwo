@@ -26,9 +26,9 @@ It contains four tables:
   1. ``id`` - primary identifier
   2. ``name`` - the name of the level (can be entered by the user)
   3. ``author`` - the author name, as a string
-  4. ``creation_date`` - a UNIX timestamp of the date the level was submitted
-  5. ``last_modification_date`` - a UNIX timestamp of the date the level was last modified
-  6. ``shape`` - the shape of the level, formatted like `x,y`
+  4. ``shape`` - the shape of the level, formatted like `x,y`
+  5. ``creation_date`` - a UNIX timestamp of the date the level was submitted
+  6. ``last_modification_date`` - a UNIX timestamp of the date the level was last modified
 
 
 ### ``levels_content``

@@ -2,6 +2,7 @@
 Defines the database models.
 """
 
+from typing import Tuple
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
@@ -36,15 +37,16 @@ class LevelDBO(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(64))
     author = Column(String(64))
+    shape = Column(String(8))
     creation_date = Column(Date, default=datetime.utcnow())
     last_modification_date = Column(Date)
-    shape = Column(String(8))
 
-    def __init__(self, name: str, author: str, creation_date: int, last_modification_date: int):
+    def __init__(self, name: str, author: str, shape: Tuple[int, int], creation_date: int, last_modification_date: int):
         self.name = name
         self.author = author
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date
+        self.shape = shape
 
 
 class LevelContentDBO(Base):
