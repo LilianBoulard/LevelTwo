@@ -1,10 +1,15 @@
 import logging
 
+from typing import List
+
+from collections import namedtuple
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
 from ..objects import GenericObject
+from ..level import GenericLevel
 
 
 class Database:
@@ -29,8 +34,8 @@ class Database:
 
             # Initialization, only called during first instantiation
             cls._instance = super(Database, cls).__new__(cls)
-            cls._instance.engine = create_engine(f'sqlite:///LevelTwo.db', echo=True)
-            cls._instance.session = None
+            cls._instance.engine = create_engine('sqlite:///LevelTwo.db', echo=True)
+            cls._instance.session = sessionmaker(bind=cls._instance.engine)
             Base.metadata.bind = cls._instance.engine
 
         return cls._instance
@@ -43,26 +48,31 @@ class Database:
         Base.metadata.create_all(bind=self.engine)
 
     def init_session(self):
-        return sessionmaker(bind=self.engine)
+        return self.session.begin()
 
-    def get_all_levels(self):
+    def get_all_levels(self) -> List[GenericLevel]:
         with self.init_session() as session:
             q = session.query(LevelDBO).all()
-        return q
+        levels = []
+        for level in q:
+            levels.append(GenericLevel.from_dbo(level))
+        return levels
 
-    def get_all_objects(self) -> dict:
+    def get_all_objects(self) -> List[GenericObject]:
         """
-        Returns a mapping of the objects and their respective ID in the database.
-        Example:
-        >>> self.get_all_objects()
-        {0: Empty, 1: Wall, 2: Trap, 3: Mud}
+        Returns a list of the objects in the database
         """
         with self.init_session() as session:
-            mapping = {}
             result = session.query(ObjectDBO).all()
-            for obj in result:
-                mapping.update({obj.id, GenericObject.from_dbo(obj)})
-        return mapping
+            objects = [GenericObject.from_dbo(row) for row in result]
+        return objects
 
-    def get_level(self, id: int):
-        pass
+    def get_level_content_by_id(self, identifier: int) -> List[namedtuple]:
+        with self.init_session() as session:
+            q = session.query(LevelContentDBO).filter_by(level_id=identifier)
+            LevelContent = namedtuple('LevelContent', ('x', 'y', 'value'))
+            content = [
+                LevelContent(x=row.x, y=row.y, value=row.value)
+                for row in q
+            ]
+        return content
