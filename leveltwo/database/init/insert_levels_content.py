@@ -6,12 +6,11 @@ from typing import List
 
 from .default_levels import example_level
 
-from .. import Database
-from .. import LevelContentDBO
+from ..models import LevelContentDBO
 from ...level import GenericLevel
 
 
-def insert_levels_content() -> None:
+def insert_levels_content(db) -> None:
     def level_to_dbo_level(generic_level: GenericLevel) -> List[LevelContentDBO]:
         all_cells_dbo = []
         level_id = generic_level.identifier
@@ -26,8 +25,6 @@ def insert_levels_content() -> None:
                                            value=value)
                 all_cells_dbo.append(cell_dbo)
         return all_cells_dbo
-
-    db = Database()
 
     # Add level content to the database
     with db.init_session() as session:

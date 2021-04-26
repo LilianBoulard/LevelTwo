@@ -2,12 +2,11 @@
 Inserts default objects into the database.
 """
 
-from .. import Database
-from .. import ObjectDBO
+from ..models import ObjectDBO
 from .default_objects import *
 
 
-def insert_objects():
+def insert_objects(db):
     def object_to_dbo_object(generic_object: GenericObject) -> ObjectDBO:
         name = generic_object.name
         effect = generic_object.effect.value
@@ -21,12 +20,7 @@ def insert_objects():
                                max_instances=max_instances)
         return object_dbo
 
-    db = Database()
-
     # Add objects to the database
     with db.init_session() as session:
         for obj in [Empty(), StartingPoint(), ArrivalPoint(), Wall(), Mud(), Trap()]:
             session.add(object_to_dbo_object(obj))
-
-    for obj in db.get_all_objects():
-        print(obj.identifier, obj.name)

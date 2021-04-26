@@ -4,13 +4,12 @@ Inserts an example level into the database.
 
 from .default_levels import example_level
 
-from .. import Database
-from .. import LevelDBO
+from ..models import LevelDBO
 from ...level import GenericLevel
 from ...utils import list_to_string
 
 
-def insert_levels() -> None:
+def insert_levels(db) -> None:
     def level_to_dbo_level(generic_level: GenericLevel) -> LevelDBO:
         name = generic_level.name
         author = generic_level.author
@@ -23,8 +22,6 @@ def insert_levels() -> None:
                              creation_date=creation_date,
                              last_modification_date=last_modification_date)
         return level_dbo
-
-    db = Database()
 
     # Add level to the database
     with db.init_session() as session:

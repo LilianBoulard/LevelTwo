@@ -7,18 +7,18 @@ from .. import Database
 
 def insert_all() -> None:
 
-    db = Database()
+    db = Database(init=False)
 
     # Reset all tables
     db.delete_tables()
     db.create_tables()
 
     # Insert all
-    insert_objects()
-    insert_levels()
-    insert_levels_content()
+    insert_objects(db)
+    insert_levels(db)
+    insert_levels_content(db)
 
-    count = db.print_tables_counts()
+    count = db.get_tables_counts()
     print(count)
 
 
