@@ -47,12 +47,17 @@ class Database:
     def init_session(self):
         return self.session.begin()
 
-    def print_tables_counts(self) -> None:
+    def get_tables_counts(self) -> dict:
         with self.init_session() as session:
             object_count = session.query(ObjectDBO.id).count()
             level_count = session.query(LevelDBO.id).count()
             level_content_count = session.query(LevelContentDBO.id).count()
-        print(f'object={object_count} ; levels={level_count} ; level_content={level_content_count}')
+
+        return {
+            ObjectDBO.__tablename__: object_count,
+            LevelDBO.__tablename__: level_count,
+            LevelContentDBO.__tablename__: level_content_count,
+        }
 
     def get_all_levels(self) -> List[GenericLevel]:
         with self.init_session() as session:
