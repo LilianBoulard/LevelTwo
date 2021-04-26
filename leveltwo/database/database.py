@@ -1,10 +1,15 @@
+import os
 import logging
+import sqlite3
+import leveltwo
 
 from typing import List
+from pathlib import Path
 
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from .init import insert_objects, insert_levels, insert_levels_content
 from ..object import GenericObject
 from ..level import GenericLevel, GenericLevelContent
 from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
@@ -21,7 +26,7 @@ class Database:
     engine = None
     session = None
 
-    def __new__(cls):
+    def __new__(cls, init: bool = True):
         """
         Uses a trick to create only one "true" database instance,
         no matter how many times this class is instantiated.
@@ -32,17 +37,54 @@ class Database:
 
             # Initialization, only called during first instantiation
             cls._instance = super(Database, cls).__new__(cls)
-            cls._instance.engine = create_engine('sqlite:///LevelTwo.db', echo=True)
+            path = Path(os.path.abspath(leveltwo.__file__)).parent
+            db_path = os.path.join(path, "LevelTwo.db")
+            cls._instance.engine = create_engine(f'sqlite:///{db_path}', echo=True)
             cls._instance.session = sessionmaker(bind=cls._instance.engine)
             Base.metadata.bind = cls._instance.engine
+            if init:
+                cls._instance.init_db()
 
         return cls._instance
 
+    def init_db(self):
+        logging.info('Initiating database')
+
+        try:
+            count = self.get_tables_counts()
+        except sqlite3.OperationalError:
+            # If we could not query the tables,
+            # that means we must create the tables and insert the default values in.
+            delete_tables = False
+            create_tables = True
+            insert_values = True
+        else:
+            # If we could query the tables, that means we don't have to delete nor create them.
+            delete_tables = False
+            create_tables = False
+            if any([v == 0 for v in count]):
+                # If any of the tables are empty, we'll insert the default values
+                insert_values = True
+            else:
+                insert_values = False
+
+        if delete_tables:
+            self.delete_tables()
+        if create_tables:
+            self.create_tables()
+
+        if insert_values:
+            insert_objects(self)
+            insert_levels(self)
+            insert_levels_content(self)
+
     def create_tables(self) -> None:
         Base.metadata.create_all(bind=self.engine)
+        logging.info('Created all tables')
 
     def delete_tables(self) -> None:
         Base.metadata.drop_all(bind=self.engine)
+        logging.info('Deleted all tables')
 
     def init_session(self):
         return self.session.begin()
