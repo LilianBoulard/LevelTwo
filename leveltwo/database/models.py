@@ -41,12 +41,12 @@ class LevelDBO(Base):
     creation_date = Column(Date, default=datetime.utcnow())
     last_modification_date = Column(Date)
 
-    def __init__(self, name: str, author: str, shape: Tuple[int, int], creation_date: int, last_modification_date: int):
+    def __init__(self, name: str, author: str, shape: str, creation_date: int, last_modification_date: int):
         self.name = name
         self.author = author
+        self.shape = shape
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date
-        self.shape = shape
 
 
 class LevelContentDBO(Base):
@@ -58,8 +58,8 @@ class LevelContentDBO(Base):
     pos_y = Column(Integer)
     value = Column(Integer, default=0)
 
-    def __init__(self, name: str, pos_x: int, pos_y: int, value: str):
-        self.name = name
+    def __init__(self, level_id: int, pos_x: int, pos_y: int, value: int):
+        self.level_id = level_id
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.value = value

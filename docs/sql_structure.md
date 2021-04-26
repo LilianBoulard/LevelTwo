@@ -13,7 +13,7 @@ It contains four tables:
 - 6 columns:
   1. ``id`` - primary identifier
   2. ``name`` - the name of the object
-  3. ``effect`` - an integer linked to an enumerator, indicating which effect it has on the player
+  3. ``effect`` - an integer linked to the `Effects` enumerator, indicating which effect it has on the player / level
   4. ``traversable`` - a boolean indicating whether a character can pass through
   5. ``min_instances`` - how many instances can there be at least in a single level
   6. ``max_instances`` - how many instances can there be at most in a single level
