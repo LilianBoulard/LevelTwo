@@ -128,8 +128,6 @@ class Database:
                     GenericLevelContent(level_id=identifier, x=row.pos_x, y=row.pos_y, value=row.value)
                     for row in q
                 ]
-                for cell in content:
-                    print(vars(cell))
             return content
 
         with self.init_session() as session:
