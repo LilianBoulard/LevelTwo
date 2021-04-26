@@ -5,10 +5,10 @@ Must be inherited by all other objects.
 
 import os
 
+from enum import Enum
 from PIL import Image
 
-from leveltwo.enums.effects import Effects
-from enum import Enum
+from .enums import Effects
 
 
 objects_sprites_directory: str = "../sprites/"
