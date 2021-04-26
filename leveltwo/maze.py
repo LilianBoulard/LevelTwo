@@ -3,8 +3,8 @@ import numpy as np
 
 from typing import Tuple
 
-from leveltwo.enums import Objects, Colors
-from leveltwo.objects import StartingPoint, ArrivalPoint, Wall, Mud, Trap, Empty
+from .database import Database
+from .enums import Colors
 
 pygame.init()
 style = pygame.font.SysFont('calibri', 50)
@@ -22,8 +22,8 @@ class Cell:
     and in which an object can be placed.
     """
 
-    def __init__(self, object_type: Objects):
-        self.object_type: Objects = object_type
+    def __init__(self, object_type):
+        self.object_type = object_type
         self.origin_x = None
         self.origin_y = None
         self.end_x = None
@@ -56,9 +56,9 @@ class Maze:
         self.level = level
         self.parent.screen_size = np.add(self.squarify(self.parent.screen_size), toolbox_size)
         self.maze_shape = self.level.content.shape
-        self.screen = pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.parent.screen_size, pygame.RESIZABLE)
         self.screen.fill(Colors.WHITE)  # Set the background color
-        self.cells_coordinates_matrix = np.empty(self.level.content.shape)
+        self.cells_coordinates_matrix = np.empty((self.level.content.shape[0], self.level.content.shape[1], 4))
         self._running = True
         pygame.display.set_caption("Level")
 
@@ -76,7 +76,7 @@ class Maze:
         """
         Resizes PyGame's window.
         """
-        self.screen_size = (x, y)
+        self.parent.screen_size = (x, y)
         self.draw_grid()
 
     def init_grid(self) -> np.array:
@@ -90,18 +90,18 @@ class Maze:
         # Using a round division might produce some unwanted pixel lines along the window's edges.
         # A later version might implement the auto-resizing of the window if
         # the standard division does not produce a round integer.
-        grid_size = np.subtract(self.screen_size, toolbox_size)
+        grid_size = np.subtract(self.parent.screen_size, toolbox_size)
         z = grid_size // self.maze_shape
         if z[0] != z[1]:
             raise RuntimeError(f'Could not create squared cells (got {z=}).')
-        return z
+        return z[0]
 
     def draw_grid(self) -> None:
         """
         Constructs the maze's grid and draws rectangles for each cell on the screen.
         """
         z = self.get_z()
-        rows, cols = self.cells_coordinates_matrix
+        rows, cols = self.level.content.shape
         for i_x in range(rows):
             for i_y in range(cols):
                 x = i_x * z
@@ -113,11 +113,12 @@ class Maze:
                 end_y = y + z
 
                 # Construct the matrix
-                self.cells_coordinates_matrix[i_x, i_y] = [origin_x, origin_y, end_x, end_y]
+                print([origin_x, origin_y, end_x, end_y])
+                self.cells_coordinates_matrix[i_x, i_y] = np.array([origin_x, origin_y, end_x, end_y])
                 cell = self.level.content[i_x, i_y]
                 # Draw the rectangle.
                 rect = pygame.Rect(x, y, z, z)
-                pygame.draw.rect(self.screen, cell.object_type.item_color, rect, width=1)
+                pygame.draw.rect(self.screen, Colors.RED, rect, width=1)
 
     def get_bounds(self, x: int, y: int) -> Tuple[int, int, int, int]:
         """
@@ -174,14 +175,8 @@ class MazeEditable(Maze):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.toolbar_items = [
-            Empty(font_color=Colors.BLACK, item_color=Colors.WHITE),
-            Trap(font_color=Colors.BLACK, item_color=Colors.BROWN),
-            Wall(font_color=Colors.WHITE, item_color=Colors.BLACK),
-            StartingPoint(font_color=Colors.BLACK, item_color=Colors.GREEN),
-            ArrivalPoint(font_color=Colors.BLACK, item_color=Colors.RED),
-            Mud(font_color=Colors.BLACK, item_color=Colors.BROWN),
-        ]
+        db = Database()
+        self.toolbar_items = db.get_all_objects()
         self.toolbar_buttons = {}
 
     def draw_toolbox(self) -> None:
@@ -191,6 +186,7 @@ class MazeEditable(Maze):
         # Reset buttons
         self.toolbar_buttons = {}
 
+        # Add labels
         menu_label = label.render("ToolBox", True, Colors.BLACK)
         self.screen.blit(menu_label, (610, 5))
         indic_label = label.render("Click and set !", True, Colors.BLACK)
@@ -198,10 +194,13 @@ class MazeEditable(Maze):
 
         x = 610
         for i, item in enumerate(self.toolbar_items):
+            # Compute position on the vertical axis
             y = (i + 1) * 50
-            title = label.render(item.name, True, item.font_color)
+            # Display label for this item
+            title = label.render(item.name, True, Colors.RED)
+            # Draw the rectangle. We'll keep it in order to know when the user clicks on it.
             rectangle = pygame.Rect(x, y, title.get_width(), title.get_height())
-            pygame.draw.rect(self.screen, item.item_color, rectangle)
+            pygame.draw.rect(self.screen, Colors.RED, rectangle)
             self.screen.blit(title, (x, y))
 
             self.toolbar_buttons.update({item.name: rectangle})
@@ -212,7 +211,8 @@ class MazeEditable(Maze):
         """
 
         self.draw_grid()
-        selected_tool_index = 0  # Select the first item of the list as default (should be object `Empty`)
+        # Select the first item of the list as default (should be object `Empty`)
+        selected_object = self.toolbar_items[0]
         while self._running:
             for event in pygame.event.get():
 
@@ -227,10 +227,9 @@ class MazeEditable(Maze):
 
                 if 540 < mouse_x < 740 and 0 < mouse_y < 540:  # If in the toolbox area.
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        for index, button in enumerate(self.toolbar_buttons.values()):
+                        for obj, button in zip(self.toolbar_items, self.toolbar_buttons.values()):
                             if button.collidepoint:
-                                selected_tool_index = index
-                                print(f'{selected_tool_index=}')
+                                selected_object = obj
 
                 if 0 < mouse_x < 540 and 0 < mouse_y < 540:  # If in the maze - grid - area.
                     if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
@@ -241,10 +240,10 @@ class MazeEditable(Maze):
                         horizontal_z = end_x - origin_x
                         vertical_z = end_y - origin_y
 
-                        selected_object = self.toolbar_items[selected_tool_index]
                         # Set the cell's object in the level content
-                        self.level.content[clicked_cell_coords].object_type = selected_object
+                        self.level.content[clicked_cell_coords] = selected_object.identifier
                         rect = pygame.Rect(origin_x, origin_y, horizontal_z, vertical_z)
                         self.draw_grid()
                         # pygame.draw.rect(self.screen, Colors.BROWN, rect)
+
             pygame.display.update()

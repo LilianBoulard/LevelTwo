@@ -24,7 +24,7 @@ class GenericLevel:
         identifier = dbo.id
         name = dbo.name
         author = dbo.author
-        content = np.zeros(tuple(string_to_list(dbo.shape)))
+        content = np.zeros(tuple([int(v) for v in string_to_list(dbo.shape)]), dtype='int16')
         creation_date = dbo.creation_date
         last_modification_date = dbo.last_modification_date
         return cls(identifier, name, author, content, creation_date, last_modification_date)

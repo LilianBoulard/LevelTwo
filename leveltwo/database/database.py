@@ -2,11 +2,12 @@ import logging
 
 from typing import List
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
-from . import Base, ObjectDBO, LevelDBO, LevelContentDBO
-from .. import GenericLevel, GenericObject, GenericLevelContent
+from ..object import GenericObject
+from ..level import GenericLevel, GenericLevelContent
+from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
 
 
 class Database:
@@ -46,12 +47,20 @@ class Database:
     def init_session(self):
         return self.session.begin()
 
-    def get_all_levels(self) -> list:
+    def print_tables_counts(self) -> None:
         with self.init_session() as session:
-            q = session.query(LevelDBO).all()
+            object_count = session.query(ObjectDBO.id).count()
+            level_count = session.query(LevelDBO.id).count()
+            level_content_count = session.query(LevelContentDBO.id).count()
+        print(f'object={object_count} ; levels={level_count} ; level_content={level_content_count}')
+
+    def get_all_levels(self) -> List[GenericLevel]:
+        with self.init_session() as session:
+            q = session.query(LevelDBO.id).all()
         levels = []
-        for level in q:
-            levels.append(GenericLevel.from_dbo(level))
+        for content in q:  # Is it correct ?
+            for level_id in content:
+                levels.append(self.construct_level(level_id))
         return levels
 
     def get_all_objects(self) -> List[GenericObject]:

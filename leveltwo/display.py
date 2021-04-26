@@ -1,7 +1,7 @@
 import pygame
 import pygame_menu
 
-from leveltwo.maze import MazeDisplay, MazeEditable
+from . import Database, MazeEditable
 
 from typing import Tuple
 
@@ -46,14 +46,16 @@ class Display:
 
     def edit(self):
         # Get level from database
-        # level =
+        db = Database()
+        level = db.construct_level(0)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
 
     def create(self):
         # Get level from database
-        # level =
+        db = Database()
+        level = db.construct_level(0)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
