@@ -22,7 +22,7 @@ It contains four tables:
 ### ``levels``
 
 - Goal: hold information about each level
-- columns:
+- 6 columns:
   1. ``id`` - primary identifier
   2. ``name`` - the name of the level (can be entered by the user)
   3. ``author`` - the author name, as a string

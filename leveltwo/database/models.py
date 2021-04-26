@@ -54,7 +54,7 @@ class LevelContentDBO(Base):
     level_id = Column(ForeignKey('levels.id', ondelete='CASCADE'))
     pos_x = Column(Integer)
     pos_y = Column(Integer)
-    value = Column(String)
+    value = Column(Integer, default=0)
 
     def __init__(self, name: str, pos_x: int, pos_y: int, value: str):
         self.name = name
