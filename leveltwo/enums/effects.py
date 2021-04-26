@@ -5,13 +5,9 @@ Lists effects that can be applied.
 from enum import Enum
 
 
-class LevelEffects(Enum):
+class Effects(Enum):
     NONE = 0
-    FINISH = 1
-    STOP = 2
-
-
-class PlayerEffects(Enum):
-    NONE = 0
-    SLOW = 1
-    KILL = 2
+    LEVEL_FINISH = 1
+    PLAYER_STOP = 2
+    PLAYER_SLOW = 3
+    PLAYER_KILL = 4

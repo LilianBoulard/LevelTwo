@@ -2,14 +2,11 @@ import logging
 
 from typing import List
 
-from collections import namedtuple
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
-from ..objects import GenericObject
-from ..level import GenericLevel
+from . import Base, ObjectDBO, LevelDBO, LevelContentDBO
+from .. import GenericLevel, GenericObject, GenericLevelContent
 
 
 class Database:
@@ -40,17 +37,16 @@ class Database:
 
         return cls._instance
 
-    def __del__(self):
-        if self.session is not None:
-            raise Exception('Session is ongoing, please clear it using method `end_session` before quitting.')
-
     def create_tables(self) -> None:
         Base.metadata.create_all(bind=self.engine)
+
+    def delete_tables(self) -> None:
+        Base.metadata.drop_all(bind=self.engine)
 
     def init_session(self):
         return self.session.begin()
 
-    def get_all_levels(self) -> List[GenericLevel]:
+    def get_all_levels(self) -> list:
         with self.init_session() as session:
             q = session.query(LevelDBO).all()
         levels = []
@@ -67,12 +63,24 @@ class Database:
             objects = [GenericObject.from_dbo(row) for row in result]
         return objects
 
-    def get_level_content_by_id(self, identifier: int) -> List[namedtuple]:
+    def construct_level(self, level_id: int) -> GenericLevel:
+
+        def get_content(identifier: int) -> List[GenericLevelContent]:
+            with self.init_session() as session:
+                q = session.query(LevelContentDBO).filter_by(level_id=identifier).all()
+                content = [
+                    GenericLevelContent(level_id=identifier, x=row.x, y=row.y, value=row.value)
+                    for row in q
+                ]
+            return content
+
         with self.init_session() as session:
-            q = session.query(LevelContentDBO).filter_by(level_id=identifier)
-            LevelContent = namedtuple('LevelContent', ('x', 'y', 'value'))
-            content = [
-                LevelContent(x=row.x, y=row.y, value=row.value)
-                for row in q
-            ]
-        return content
+            level = GenericLevel.from_dbo(session.query(LevelDBO).filter_by(id=level_id).one())
+
+        mapping = get_content(level.identifier)
+        # For each cell stored in the database, paste its content in the array.
+        # Note: possible optimization: remove all cells in the database that have
+        # their value to `0`, as we create by default an array of zeros.
+        for cell in mapping:
+            level.content[cell.x, cell.y] = cell.value
+        return level

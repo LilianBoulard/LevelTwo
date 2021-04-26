@@ -1,9 +1,0 @@
-import create_database_levels
-import create_database_levelsContent
-import create_database_objects
-import create_database_objectsSprites
-
-create_database_levelsContent.create_levels_content()
-create_database_objectsSprites.create_objects_sprite()
-create_database_levels.create_levels()
-create_database_objects.create_objects()

@@ -1,21 +1,19 @@
 import numpy as np
 
-from typing import Tuple
 from datetime import datetime
 
-from . import Database
+from .utils import string_to_list
 
 
 class GenericLevel:
-    def __init__(self, identifier: int, name: str, author: str, shape: Tuple[int, int],
-                 creation_date: int, last_modification_date: int):
+    def __init__(self, identifier: int, name: str, author: str, content: np.array,
+                 creation_date: datetime, last_modification_date: datetime):
         self.identifier = identifier
         self.name = name
         self.author = author
-        self.shape = shape
+        self.content = content
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date
-        self.content = self.get_content()
 
     @classmethod
     def from_dbo(cls, dbo):
@@ -26,10 +24,10 @@ class GenericLevel:
         identifier = dbo.id
         name = dbo.name
         author = dbo.author
-        shape = dbo.shape
+        content = np.zeros(tuple(string_to_list(dbo.shape)))
         creation_date = dbo.creation_date
         last_modification_date = dbo.last_modification_date
-        return cls(identifier, name, author, shape, creation_date, last_modification_date)
+        return cls(identifier, name, author, content, creation_date, last_modification_date)
 
     def write(self) -> None:
         """
@@ -37,24 +35,18 @@ class GenericLevel:
         """
         pass
 
-    def get_content(self) -> np.array:
-        """
-        Constructs the level's content from the values stored in the database.
-        :return numpy.array:
-        """
-        db = Database()
-        # Init content, a numpy array
-        content = np.zeros(self.shape)
-        mapping = db.get_level_content_by_id(self.identifier)
-        # For each cell stored in the database, paste its content in the array.
-        # Note: possible optimization: remove all cells in the database that have
-        # their value to `0`, as we create by default an array of zeros.
-        for cell in mapping:
-            content[cell.x, cell.y] = cell.value
-        return content
 
-    def get_readable_creation_date(self) -> datetime:
-        return datetime.fromtimestamp(self.creation_date)
+class GenericLevelContent:
+    def __init__(self, level_id: int, x: int, y: int, value: int):
+        self.level_id = level_id
+        self.x = x
+        self.y = y
+        self.value = value
 
-    def get_readable_last_modification_date(self) -> datetime:
-        return datetime.fromtimestamp(self.last_modification_date)
+    @classmethod
+    def from_dbo(cls, dbo):
+        level_id = dbo.level_id
+        x = dbo.x
+        y = dbo.y
+        value = dbo.value
+        cls(level_id, x, y, value)
