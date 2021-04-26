@@ -1,8 +1,9 @@
 import pygame
 import numpy as np
 
-from typing import Tuple
+from typing import Tuple, Optional
 
+from .sprites.object_to_color import ObjectToColor
 from .database import Database
 from .enums import Colors
 
@@ -52,6 +53,8 @@ class Cell:
 class Maze:
 
     def __init__(self, parent_display, level):
+        db = Database()
+        self.objects = db.get_all_objects()
         self.parent = parent_display
         self.level = level
         self.parent.screen_size = np.add(self.squarify(self.parent.screen_size), toolbox_size)
@@ -83,7 +86,7 @@ class Maze:
         # Create an empty numpy array that will act as a matrix, in which we will store the cells.
         return np.empty(self.maze_shape, dtype='object')
 
-    def get_z(self) -> int:
+    def get_z(self) -> np.array:
         """
         Computes `z`, which is the side length each cell has on the screen (in pixels).
         """
@@ -94,46 +97,49 @@ class Maze:
         z = grid_size // self.maze_shape
         if z[0] != z[1]:
             raise RuntimeError(f'Could not create squared cells (got {z=}).')
-        return z[0]
+        return z
 
     def draw_grid(self) -> None:
         """
         Constructs the maze's grid and draws rectangles for each cell on the screen.
         """
         z = self.get_z()
+        z_x, z_y = z
         rows, cols = self.level.content.shape
         for i_x in range(rows):
             for i_y in range(cols):
-                x = i_x * z
-                y = i_y * z
+                x = i_x * z_x
+                y = i_y * z_y
 
                 origin_x = x
                 origin_y = y
-                end_x = x + z
-                end_y = y + z
+                end_x = x + z_x
+                end_y = y + z_y
 
                 # Construct the matrix
-                print([origin_x, origin_y, end_x, end_y])
                 self.cells_coordinates_matrix[i_x, i_y] = np.array([origin_x, origin_y, end_x, end_y])
-                cell = self.level.content[i_x, i_y]
+                cell = self.level.content[i_x, i_y] - 1
                 # Draw the rectangle.
-                rect = pygame.Rect(x, y, z, z)
-                pygame.draw.rect(self.screen, Colors.RED, rect, width=1)
+                rect = pygame.Rect(x, y, *z)
+                color = ObjectToColor[self.objects[cell].name].value
+                pygame.draw.rect(self.screen, color, rect)
 
-    def get_bounds(self, x: int, y: int) -> Tuple[int, int, int, int]:
+    def get_bounds(self, x: int, y: int, z: Optional[Tuple[int, ...]] = None) -> Tuple[int, int, int, int]:
         """
         Given two coordinates, `x` and `y`, constructs the coordinates of the square they land in.
         Example (with `self.get_z()` returning `10`):
         >>> self.get_bounds(4, 29)
         (0, 20, 10, 30)
         """
-        z = self.get_z()
-        x_remainder = x % z
-        y_remainder = y % z
+        if z is None:
+            z = self.get_z()
+        z_x, z_y = z
+        x_remainder = x % z_x
+        y_remainder = y % z_y
         x_lower = x - x_remainder
         y_lower = y - y_remainder
-        x_upper = x_lower + z
-        y_upper = y_lower + z
+        x_upper = x_lower + z_x
+        y_upper = y_lower + z_y
         bounds = (x_lower, y_lower, x_upper, y_upper)
         return bounds
 
@@ -175,16 +181,21 @@ class MazeEditable(Maze):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        db = Database()
-        self.toolbar_items = db.get_all_objects()
-        self.toolbar_buttons = {}
+        self.toolbar_x_offset = 610
+        self.toolbar_button_width = 150
+        self.toolbar_button_height = 50
+        self.buttons_coordinates_matrix = np.empty((len(self.objects), 4))
+
+    def draw(self):
+        self.draw_grid()
+        self.draw_toolbox()
 
     def draw_toolbox(self) -> None:
         """
         Creates the toolbar's buttons from `self.toolbar_items`.
         """
-        # Reset buttons
-        self.toolbar_buttons = {}
+        # Reset buttons coordinates matrix
+        self.buttons_coordinates_matrix = np.empty((len(self.objects), 4))
 
         # Add labels
         menu_label = label.render("ToolBox", True, Colors.BLACK)
@@ -192,27 +203,61 @@ class MazeEditable(Maze):
         indic_label = label.render("Click and set !", True, Colors.BLACK)
         self.screen.blit(indic_label, (570, 25))
 
-        x = 610
-        for i, item in enumerate(self.toolbar_items):
+        x = self.toolbar_x_offset  # Watch out !!!
+        for i, item in enumerate(self.objects):
+
             # Compute position on the vertical axis
-            y = (i + 1) * 50
+            y = (i + 1) * self.toolbar_button_height
+
             # Display label for this item
-            title = label.render(item.name, True, Colors.RED)
+            title = label.render(item.name, True, Colors.WHITE)
             # Draw the rectangle. We'll keep it in order to know when the user clicks on it.
             rectangle = pygame.Rect(x, y, title.get_width(), title.get_height())
-            pygame.draw.rect(self.screen, Colors.RED, rectangle)
+            pygame.draw.rect(self.screen, Colors.BLACK, rectangle)
             self.screen.blit(title, (x, y))
 
-            self.toolbar_buttons.update({item.name: rectangle})
+            # Get coordinates
+            origin_x = x
+            origin_y = y
+            end_x = origin_x + self.toolbar_button_width
+            end_y = origin_y + self.toolbar_button_height
+            # And update the matrix
+            self.buttons_coordinates_matrix[i] = np.array([origin_x, origin_y, end_x, end_y])
+
+    def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> Tuple[int, int, int, int]:
+        z_x, z_y = z
+
+        remainder_x = x % self.toolbar_x_offset % z_x
+        remainder_y = y % z_y
+
+        origin_x = x - remainder_x
+        origin_y = y - remainder_y
+        end_x = origin_x + self.toolbar_button_width
+        end_y = origin_y + self.toolbar_button_height
+
+        return origin_x, origin_y, end_x, end_y
+
+    def get_clicked_button_index(self, x: int, y: int) -> int:
+        """
+        Iterates through the buttons matrix and returns the one the user clicked on,
+        based on the coordinates of his input.
+
+        :param int x:
+        :param int y:
+        :return int: The index of the button clicked on.
+        """
+        searching_for = self.get_button_bounds(x, y, z=(self.toolbar_button_width, self.toolbar_button_height))
+        cell_index = np.where((self.buttons_coordinates_matrix == searching_for).all(axis=1))
+        return int(cell_index[0])
 
     def run(self) -> None:
         """
         Main loop.
         """
 
-        self.draw_grid()
+        self.draw()
         # Select the first item of the list as default (should be object `Empty`)
-        selected_object = self.toolbar_items[0]
+        selected_object = self.objects[0]
         while self._running:
             for event in pygame.event.get():
 
@@ -227,9 +272,9 @@ class MazeEditable(Maze):
 
                 if 540 < mouse_x < 740 and 0 < mouse_y < 540:  # If in the toolbox area.
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        for obj, button in zip(self.toolbar_items, self.toolbar_buttons.values()):
-                            if button.collidepoint:
-                                selected_object = obj
+                        idx = self.get_clicked_button_index(mouse_x, mouse_y)
+                        selected_object = self.objects[idx]
+                        print(f'New selected object {selected_object.name, selected_object.identifier}')
 
                 if 0 < mouse_x < 540 and 0 < mouse_y < 540:  # If in the maze - grid - area.
                     if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
@@ -242,8 +287,6 @@ class MazeEditable(Maze):
 
                         # Set the cell's object in the level content
                         self.level.content[clicked_cell_coords] = selected_object.identifier
-                        rect = pygame.Rect(origin_x, origin_y, horizontal_z, vertical_z)
-                        self.draw_grid()
-                        # pygame.draw.rect(self.screen, Colors.BROWN, rect)
+                        self.draw()
 
             pygame.display.update()
