@@ -1,6 +1,7 @@
-from .object import GenericObject
-from .maze import Cell, Maze, MazeDisplay, MazeEditable
+from .config import Config
 from .database import Database
-from .display import Display
+from .object import GenericObject
+from .display import Play, LevelEditor
 from .level import GenericLevel, GenericLevelContent
+from .maze import Maze, MazeDisplay, MazeEditable
 from .utils import list_to_string, string_to_list, get_timestamp, calc_tuple

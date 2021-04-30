@@ -1,4 +1,4 @@
-from ... import GenericObject
+from ...object import GenericObject
 from ...enums import Effects
 
 

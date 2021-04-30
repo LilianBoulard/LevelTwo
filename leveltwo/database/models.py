@@ -4,8 +4,7 @@ Defines the database models.
 
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
-from sqlalchemy import Column, Date, Integer, String, Boolean
+from sqlalchemy import Column, Date, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 
