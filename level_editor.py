@@ -6,5 +6,4 @@ screen_height = 540
 screen_size = (screen_width, screen_height)
 
 if __name__ == "__main__":
-    display = leveltwo.Display(screen_size)
-    display.display_menu()
+    display = leveltwo.LevelEditor(screen_size)
