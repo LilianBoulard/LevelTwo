@@ -29,6 +29,16 @@ class GenericLevel:
         last_modification_date = dbo.last_modification_date
         return cls(identifier, name, author, content, creation_date, last_modification_date)
 
+    @classmethod
+    def create_new_level(cls):
+        identifier = None
+        name = 'New level'
+        author = 'New user'
+        content = np.ones((25, 25), dtype='int16')
+        creation_date = datetime.utcnow()
+        last_modification_date = datetime.utcnow()
+        return cls(identifier, name, author, content, creation_date, last_modification_date)
+
     def write(self) -> None:
         """
         Writes own content to the database.

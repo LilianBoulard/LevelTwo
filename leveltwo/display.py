@@ -1,7 +1,10 @@
 import pygame
 import pygame_menu
 
-from . import Database, MazeEditable
+from .config import Config
+from .database import Database
+from .level import GenericLevel
+from .maze import MazeEditable, MazeDisplay
 
 from typing import Tuple
 
@@ -27,7 +30,6 @@ class Display:
     def __init__(self, screen_size: Tuple[int, int]):
         self.screen_size = screen_size
         self.theme: pygame_menu.themes.Theme = pygame_menu.themes.THEME_SOLARIZED
-        self.level_selected = 1  # 1-indexed
         self.running = True
         self.db = Database()
 
@@ -37,12 +39,37 @@ class Display:
     def get_screen(self):
         return pygame.display.set_mode(self.screen_size)
 
-    def play(self, user_input):
+
+class LevelEditor(Display):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.level_selected = 1  # 1-indexed
+        self.display_menu()
+
+    def display_menu(self):
+
+        def on_selector_change(struct: tuple, selection: int):
+            self.level_selected = selection
+
         screen = self.get_screen()
-        menu = pygame_menu.Menu('LevelTwo', *self.screen_size, theme=self.theme)
-        menu.add.button(f"Welcome {user_input.get_value()} to level {self.level_selected}", self.play)
-        menu.add.button('Back to main menu', self.display_menu)
-        pygame.display.set_caption('LevelTwo')
+        menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
+
+        # Level selector
+        all_levels = self.db.get_all_levels()
+        menu.add.selector('Level selected: ',
+                          [(level.name, level.identifier) for level in all_levels],
+                          onchange=on_selector_change)
+
+        edit_args = []  # Positional args to be passed to the callback below.
+        menu.add.button('Edit', self.edit, *edit_args)
+
+        create_args = []
+        menu.add.button('Create', self.create, *create_args)
+
+        menu.add.button('Quit', pygame_menu.events.EXIT)
+
+        pygame.display.set_caption(Config.project_name)
         menu.mainloop(screen)
 
     def edit(self):
@@ -53,21 +80,28 @@ class Display:
         self.get_screen()
 
     def create(self):
-        # Get level from database
-        level = self.db.construct_level(self.level_selected)
-        maze = MazeEditable(parent_display=self, level=level)
+        # Create new level
+        new_level = GenericLevel.create_new_level()
+        maze = MazeEditable(parent_display=self, level=new_level)
         maze.run()
         self.get_screen()
+
+
+class Play(Display):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.level_selected = 1  # 1-indexed
+        self.algorithm_selected = 0  # 0-indexed
+        self.display_menu()
 
     def display_menu(self):
 
         def on_selector_change(struct: tuple, selection: int):
             self.level_selected = selection
-            print(selection)
 
         screen = self.get_screen()
-        menu = pygame_menu.Menu('LevelTwo', *self.screen_size, theme=self.theme)
-        user_input = menu.add.text_input('Name :', default='')
+        menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
 
         # Level selector
         all_levels = self.db.get_all_levels()
@@ -75,16 +109,27 @@ class Display:
                           [(level.name, level.identifier) for level in all_levels],
                           onchange=on_selector_change)
 
-        play_args = [user_input]  # Positional args to be passed to the callback below.
+        # Algorithm selector
+        menu.add.selector('Algorithm: ',
+                          Config.pathfinding_algorithms,
+                          onchange=on_selector_change)
+
+        play_args = []  # Positional args to be passed to the callback below.
         menu.add.button('Play', self.play, *play_args)
-
-        edit_args = []
-        menu.add.button('Edit', self.edit, *edit_args)
-
-        create_args = []
-        menu.add.button('Create', self.create, *create_args)
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
-        pygame.display.set_caption('LevelTwo')
+        pygame.display.set_caption(Config.project_name)
         menu.mainloop(screen)
+
+    def play(self):
+
+        def on_selector_change(struct: tuple, selection: int):
+            self.algorithm_selected = selection
+
+        level = self.db.construct_level(self.level_selected)
+        maze = MazeDisplay(parent_display=self, level=level)
+        maze.run()
+        self.get_screen()
+
+

@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict
 
 from .sprites.object_to_color import ObjectToColor
 from .database import Database
@@ -15,41 +15,6 @@ label = pygame.font.SysFont('calibri', 20)
 toolbox_size = (200, 0)
 
 
-class Cell:
-
-    """
-    Implements a `Cell`, which is a square in our maze.
-    It acts as a block in which the character can move (one at a time),
-    and in which an object can be placed.
-    """
-
-    def __init__(self, object_type):
-        self.object_type = object_type
-        self.origin_x = None
-        self.origin_y = None
-        self.end_x = None
-        self.end_y = None
-
-    def set_coordinates(self, origin_x: int, origin_y: int, end_x: int, end_y: int):
-        self.origin_x: int = origin_x
-        self.origin_y: int = origin_y
-        self.end_x: int = end_x
-        self.end_y: int = end_y
-
-    def inside(self, x: int, y: int) -> bool:
-        """
-        Takes coordinates and returns whether they are located inside this cell perimeter.
-
-        :param int x:
-        :param int y:
-        :return bool: True if they are, False otherwise.
-        """
-        return self.origin_x < x <= self.end_x and self.origin_y < y <= self.end_y
-
-    def get_sprite(self):
-        pass
-
-
 class Maze:
 
     def __init__(self, parent_display, level):
@@ -57,47 +22,59 @@ class Maze:
         self.objects = db.get_all_objects()
         self.parent = parent_display
         self.level = level
-        self.parent.screen_size = np.add(self.squarify(self.parent.screen_size), toolbox_size)
         self.maze_shape = self.level.content.shape
         self.screen = pygame.display.set_mode(self.parent.screen_size, pygame.RESIZABLE)
         self.screen.fill(Colors.WHITE)  # Set the background color
         self.cells_coordinates_matrix = np.empty((self.level.content.shape[0], self.level.content.shape[1], 4))
         self._running = True
+        self.viewports: Dict[str, Tuple[int, int, int, int]] = {}
         pygame.display.set_caption("Level")
-
-    def squarify(self, size: Tuple[int, ...]) -> Tuple[int, ...]:
-        """
-        "squarifies" a tuple of integers.
-        Example:
-        >>> self.squarify((1920, 1080))
-        (1080, 1080)
-        """
-        m = min(size)
-        return tuple(m for _ in range(len(size)))
 
     def resize(self, x: int, y: int):
         """
         Resizes PyGame's window.
         """
         self.parent.screen_size = (x, y)
-        self.draw_grid()
 
     def init_grid(self) -> np.array:
         # Create an empty numpy array that will act as a matrix, in which we will store the cells.
         return np.empty(self.maze_shape, dtype='object')
 
-    def get_z(self) -> np.array:
+    def get_z(self) -> Tuple[int, int]:
         """
         Computes `z`, which is the side length each cell has on the screen (in pixels).
         """
-        # Using a round division might produce some unwanted pixel lines along the window's edges.
+        x = self.parent.screen_size[0]
+        y = self.parent.screen_size[1]
+        x_cells, y_cells = self.maze_shape
+
+        # Calculate the maximum z on both axis
+        # Note: Using a round division might produce some unwanted margins around the edges.
         # A later version might implement the auto-resizing of the window if
         # the standard division does not produce a round integer.
-        grid_size = np.subtract(self.parent.screen_size, toolbox_size)
-        z = grid_size // self.maze_shape
-        if z[0] != z[1]:
-            raise RuntimeError(f'Could not create squared cells (got {z=}).')
-        return z
+        calculated_z_x = x // x_cells
+        calculated_z_y = y // y_cells
+
+        # Check if projecting each z on the other axis works.
+        # If it doesn't for one, return the other.
+        # If it does for both, return the largest.
+        if calculated_z_x * y_cells > y:
+            z = calculated_z_y
+        elif calculated_z_y * x_cells > x:
+            z = calculated_z_x
+        else:
+            z = max(calculated_z_x, calculated_z_y)
+
+        remainder_x = x - (x_cells * z)
+        remainder_y = y - (y_cells * z)
+
+        if remainder_x > 0 or remainder_y > 0:
+            new_x = x - remainder_x
+            new_y = y - remainder_y
+            print(f'{new_x=}, {new_y=}')
+            self.resize(new_x, new_y)
+
+        return z, z
 
     def draw_grid(self) -> None:
         """
@@ -105,9 +82,9 @@ class Maze:
         """
         z = self.get_z()
         z_x, z_y = z
-        rows, cols = self.level.content.shape
-        for i_x in range(rows):
-            for i_y in range(cols):
+        s_x, s_y = self.level.content.shape
+        for i_x in range(s_x):
+            for i_y in range(s_y):
                 x = i_x * z_x
                 y = i_y * z_y
 
@@ -116,17 +93,17 @@ class Maze:
                 end_x = x + z_x
                 end_y = y + z_y
 
-                # Construct the matrix
                 self.cells_coordinates_matrix[i_x, i_y] = np.array([origin_x, origin_y, end_x, end_y])
-                cell = self.level.content[i_x, i_y] - 1
+                cell = self.level.content[i_x, i_y] - 1  # objects are 1-indexed in the level content
                 # Draw the rectangle.
-                rect = pygame.Rect(x, y, *z)
+                rect = pygame.Rect(x, y, z_x, z_y)
                 color = ObjectToColor[self.objects[cell].name].value
                 pygame.draw.rect(self.screen, color, rect)
+        grid_size = (z_x * s_x, z_y * s_y)
 
     def get_bounds(self, x: int, y: int, z: Optional[Tuple[int, ...]] = None) -> Tuple[int, int, int, int]:
         """
-        Given two coordinates, `x` and `y`, constructs the coordinates of the square they land in.
+        Given two coordinates, `x` and `y`, returns the bounds of the square they land in.
         Example (with `self.get_z()` returning `10`):
         >>> self.get_bounds(4, 29)
         (0, 20, 10, 30)
@@ -134,23 +111,24 @@ class Maze:
         if z is None:
             z = self.get_z()
         z_x, z_y = z
+
         x_remainder = x % z_x
         y_remainder = y % z_y
+
         x_lower = x - x_remainder
         y_lower = y - y_remainder
+
         x_upper = x_lower + z_x
         y_upper = y_lower + z_y
+
         bounds = (x_lower, y_lower, x_upper, y_upper)
+
         return bounds
 
     def get_clicked_cell_index(self, x: int, y: int) -> Tuple[int, ...]:
         """
-        Iterates through the cells matrix and returns the one the user clicked on,
-        based on the coordinates of his input.
-
-        :param int x:
-        :param int y:
-        :return Tuple[int, ...]: The coordinates of the cell clicked on.
+        Iterates through the cells matrix and returns the coordinates of the
+        one the user clicked on, based on the coordinates of his input.
         """
         searching_for = self.get_bounds(x, y)
         cell_index = np.where((self.cells_coordinates_matrix == searching_for).all(axis=2))
@@ -179,14 +157,17 @@ class MazeDisplay(Maze):
 
 class MazeEditable(Maze):
 
+    toolbar_button_width = 200
+    toolbar_button_height = 50
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.parent.screen_size = np.add(self.parent.screen_size, toolbox_size)
         self.toolbar_x_offset = 610
-        self.toolbar_button_width = 150
-        self.toolbar_button_height = 50
         self.buttons_coordinates_matrix = np.empty((len(self.objects), 4))
 
     def draw(self):
+        print(self.level.content)
         self.draw_grid()
         self.draw_toolbox()
 
@@ -200,8 +181,6 @@ class MazeEditable(Maze):
         # Add labels
         menu_label = label.render("ToolBox", True, Colors.BLACK)
         self.screen.blit(menu_label, (610, 5))
-        indic_label = label.render("Click and set !", True, Colors.BLACK)
-        self.screen.blit(indic_label, (570, 25))
 
         x = self.toolbar_x_offset  # Watch out !!!
         for i, item in enumerate(self.objects):
@@ -212,8 +191,9 @@ class MazeEditable(Maze):
             # Display label for this item
             title = label.render(item.name, True, Colors.WHITE)
             # Draw the rectangle. We'll keep it in order to know when the user clicks on it.
-            rectangle = pygame.Rect(x, y, title.get_width(), title.get_height())
-            pygame.draw.rect(self.screen, Colors.BLACK, rectangle)
+            rectangle = pygame.Rect(x, y, self.toolbar_button_width, title.get_height())
+            color = ObjectToColor[item.name].value
+            pygame.draw.rect(self.screen, color, rectangle)
             self.screen.blit(title, (x, y))
 
             # Get coordinates
@@ -225,6 +205,10 @@ class MazeEditable(Maze):
             self.buttons_coordinates_matrix[i] = np.array([origin_x, origin_y, end_x, end_y])
 
     def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> Tuple[int, int, int, int]:
+        """
+        Given `x` and `y` (coordinates), return a 4-tuple of integers
+        delimiting the bounds of a toolbox button.
+        """
         z_x, z_y = z
 
         remainder_x = x % self.toolbar_x_offset % z_x
@@ -254,7 +238,6 @@ class MazeEditable(Maze):
         """
         Main loop.
         """
-
         self.draw()
         # Select the first item of the list as default (should be object `Empty`)
         selected_object = self.objects[0]
@@ -267,6 +250,7 @@ class MazeEditable(Maze):
 
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
                     self.resize(event.w, event.h)
+                    self.draw()
 
                 mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -289,4 +273,4 @@ class MazeEditable(Maze):
                         self.level.content[clicked_cell_coords] = selected_object.identifier
                         self.draw()
 
-            pygame.display.update()
+                pygame.display.update()
