@@ -2,6 +2,7 @@ import numpy as np
 
 from datetime import datetime
 
+from .object import GenericObject
 from .utils import string_to_list
 
 
@@ -44,6 +45,24 @@ class GenericLevel:
         Writes own content to the database.
         """
         pass
+
+    def get_number_of_objects_in(self, object_id: int) -> int:
+        """
+        Gets number of occurrences of the object in the content.
+        """
+        return self.content[self.content == object_id].size
+
+    def is_object_occurrences_in_limits(self, obj: GenericObject) -> bool:
+        """
+        Takes an object id, and returns whether its number of occurrences
+        in the content is within the object limits.
+        """
+        occurrences = self.get_number_of_objects_in(obj.identifier)
+        return obj.min_instances <= occurrences <= obj.max_instances
+
+    def set_cell_object(self, x: int, y: int, obj: GenericObject):
+        if self.get_number_of_objects_in(obj.identifier) < obj.max_instances:
+            self.content[x, y] = obj.identifier
 
 
 class GenericLevelContent:
