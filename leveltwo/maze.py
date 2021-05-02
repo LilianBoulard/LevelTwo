@@ -308,11 +308,6 @@ class MazeEditable(Maze):
         b = self.get_toolbox_buttons_size()
         searching_for = self.get_button_bounds(x, y, z=b)
         cell_index = np.where((self.buttons_coordinates_matrix == searching_for).all(axis=1))
-        print(x, y)
-        print(b)
-        print(searching_for)
-        print(self.buttons_coordinates_matrix)
-        print(cell_index)
         try:
             index = int(cell_index[0])
             return index
