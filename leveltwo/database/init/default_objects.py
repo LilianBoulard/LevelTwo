@@ -10,7 +10,7 @@ class Empty(GenericObject):
         name = "empty"
         effect = Effects.NONE
         traversable = True
-        min_instances = 10
+        min_instances = 25
         max_instances = 1000
         super().__init__(0, name, effect, traversable, min_instances, max_instances, **kwargs)
 
@@ -46,8 +46,8 @@ class Wall(GenericObject):
         name = "wall"
         effect = Effects.PLAYER_STOP
         traversable = False
-        min_instances = 4
-        max_instances = 10
+        min_instances = 25
+        max_instances = 100
         super().__init__(3, name, effect, traversable, min_instances, max_instances, **kwargs)
 
 
@@ -59,8 +59,8 @@ class Mud(GenericObject):
         name = "mud"
         effect = Effects.PLAYER_SLOW
         traversable = True
-        min_instances = 4
-        max_instances = 10
+        min_instances = 5
+        max_instances = 20
         super().__init__(4, name, effect, traversable, min_instances, max_instances, **kwargs)
 
 
@@ -72,6 +72,6 @@ class Trap(GenericObject):
         name = "trap"
         effect = Effects.PLAYER_KILL
         traversable = True
-        min_instances = 4
+        min_instances = 2
         max_instances = 10
         super().__init__(5, name, effect, traversable, min_instances, max_instances, **kwargs)
