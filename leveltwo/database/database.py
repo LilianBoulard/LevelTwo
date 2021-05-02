@@ -39,7 +39,7 @@ class Database:
             cls._instance = super(Database, cls).__new__(cls)
             path = Path(os.path.abspath(leveltwo.__file__)).parent
             db_path = os.path.join(path, "LevelTwo.db")
-            cls._instance.engine = create_engine(f'sqlite:///{db_path}', echo=True)
+            cls._instance.engine = create_engine(f'sqlite:///{db_path}')
             cls._instance.session = sessionmaker(bind=cls._instance.engine)
             Base.metadata.bind = cls._instance.engine
             if init:
