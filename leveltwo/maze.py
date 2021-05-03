@@ -275,6 +275,10 @@ class MazeEditable(Maze):
             # And update the matrix
             self.buttons_coordinates_matrix[i] = np.array([origin_x, origin_y, end_x, end_y])
 
+        save_label = label.render("Save", True ,Colors.BLACK)
+        cancel_label = label.render("Cancel", True, Colors.BLACK)
+        self.screen.blit(save_label, (x, 500))
+        self.screen.blit(cancel_label, (x + 300, 500))
     def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> bound_struct:
         """
         Given `x` and `y` (coordinates), return a 4-tuple of integers

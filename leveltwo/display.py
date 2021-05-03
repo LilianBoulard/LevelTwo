@@ -65,7 +65,7 @@ class LevelEditor(Display):
         menu.add.button('Edit', self.edit, *edit_args)
 
         create_args = []
-        menu.add.button('Create', self.create, *create_args)
+        menu.add.button('Create', self.getprops, *create_args)
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
@@ -78,6 +78,20 @@ class LevelEditor(Display):
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
+
+    def getprops(self):
+
+        def on_selector_change(struct: tuple, selection: int):
+            self.new_level_size = selection
+
+        menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
+        menu.add.text_input('Maze name : ')
+        menu.add.selector('Size : ',
+                          [('Small', 10), ('Medium', 20), ('Large', 30)],
+                          onchange=on_selector_change)
+        menu.add.button('Save', self.create)
+        menu.add.button('Cancel', self.display_menu)
+        menu.mainloop(self.get_screen())
 
     def create(self):
         # Create new level
@@ -116,6 +130,7 @@ class Play(Display):
 
         play_args = []  # Positional args to be passed to the callback below.
         menu.add.button('Play', self.play, *play_args)
+        menu.add.button('Create')
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
