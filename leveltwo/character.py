@@ -55,24 +55,17 @@ class Character:
     Parameters
     ----------
 
-    location_x: int
-        Location of the character on the `x` (horizontal) axis.
+    start_location_x: int
+        Starting location of the character on the `x` (horizontal) axis.
 
-    location_y: int
-        Location of the character on the `y` (vertical) axis.
-
-    default_movement_speed: float, default=1.0
-        Scalar from 0 to 1.
+    start_location_y: int
+        Starting location of the character on the `y` (vertical) axis.
 
     """
 
-    def __init__(self,
-                 location_x: int,
-                 location_y: int,
-                 default_movement_speed: float = 1.0):
-        self.location_x: int = location_x
-        self.location_y: int = location_y
-        self.default_movement_speed: float = default_movement_speed
+    def __init__(self, start_location_x: int, start_location_y: int):
+        self.location_x: int = start_location_x
+        self.location_y: int = start_location_y
 
         self._alive: bool = True
         self._stunned_until: int = 0
@@ -103,14 +96,14 @@ class Character:
         self._alive = False
 
     @assert_state('dead')
-    def resurrect(self):
+    def get_resurrected(self):
         """
         Resurrects the character.
         """
         self._alive = True
 
     @assert_state('alive')
-    def stun(self, duration: int) -> None:
+    def get_stunned(self, duration: int) -> None:
         """
         Stuns the character for `duration` _seconds_.
         """

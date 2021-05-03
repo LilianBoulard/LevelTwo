@@ -6,6 +6,7 @@ from typing import Tuple, Optional, Dict
 from .enums import Colors
 from .database import Database
 from .level import GenericLevel
+from .character import Character
 from .sprites.object_to_color import ObjectToColor
 
 pygame.init()
@@ -58,22 +59,22 @@ class Maze:
         max_x, max_y, = self.screen_size
         return Viewport('outside', (0, 0, max_x, max_y))
 
-    def resize(self, x: int, y: int):
+    def resize(self, x: int, y: int, callback) -> None:
         """
         Resize window.
+
+        :param int x: New size on the `x` axis
+        :param int y: New size on the `y` axis
+        :param callback: Function to call once the resizing has been performed.
         """
         self.screen_size = (x, y)
         self.screen = pygame.display.set_mode(self.screen_size)
         pygame.display.set_caption(self.level.name)  # Set the window title
-        self.draw_grid()
+        callback()
         self.adjust_style()
 
     def adjust_style(self) -> None:
         self.screen.fill(Colors.WHITE)  # Set the background color
-
-    def init_grid(self) -> np.array:
-        # Create an empty numpy array that will act as a matrix, in which we will store the cells.
-        return np.empty(self.maze_shape, dtype='object')
 
     def get_z(self) -> Tuple[int, int]:
         """
@@ -105,7 +106,7 @@ class Maze:
         if remainder_x > 0 or remainder_y > 0:
             new_x = x - remainder_x
             new_y = y - remainder_y
-            self.resize(new_x, new_y)
+            self.resize(new_x, new_y, self.draw_grid())
 
         return z, z
 
@@ -177,6 +178,18 @@ class Maze:
 
 class MazeDisplay(Maze):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        starting_point_location = self.level.get_starting_point_position()
+        self.character = Character(*starting_point_location)
+
+    def draw_character(self):
+        pass
+
+    def draw(self):
+        self.draw_grid()
+        self.draw_character()
+
     def run(self) -> None:
         """
         Main loop.
@@ -187,8 +200,8 @@ class MazeDisplay(Maze):
                 if event.type == pygame.QUIT:
                     self._running = False
                     break
-                if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
-                    self.resize(event.w, event.h)
+                if event.type == pygame.VIDEORESIZE:
+                    self.resize(event.w, event.h, self.draw())
             pygame.display.update()
 
 
@@ -201,11 +214,6 @@ class MazeEditable(Maze):
     def draw(self):
         self.draw_grid()
         self.draw_toolbox()
-
-    def resize(self, x: int, y: int):
-        self.screen_size = (x, y)
-        self.draw()
-        self.adjust_style()
 
     def get_toolbox_buttons_size(self) -> Tuple[int, int]:
         button_width = 100
@@ -279,6 +287,7 @@ class MazeEditable(Maze):
         cancel_label = label.render("Cancel", True, Colors.BLACK)
         self.screen.blit(save_label, (x, 500))
         self.screen.blit(cancel_label, (x + 300, 500))
+
     def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> bound_struct:
         """
         Given `x` and `y` (coordinates), return a 4-tuple of integers
@@ -334,7 +343,7 @@ class MazeEditable(Maze):
                     break
 
                 if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
-                    self.resize(event.w, event.h)
+                    self.resize(event.w, event.h, self.draw())
                     self.draw()
 
                 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -347,7 +356,7 @@ class MazeEditable(Maze):
                             selected_object = self.objects[idx]
 
                 if selected_viewport.name == 'grid':  # If in the maze - grid - area.
-                    if event.type == pygame.MOUSEBUTTONDOWN:  # If the mouse was clicked.
+                    if event.type == pygame.MOUSEBUTTONDOWN:
                         x, y = self.get_clicked_cell_index(mouse_x, mouse_y)
 
                         # Set the cell's object in the level content if within limits.
@@ -355,3 +364,17 @@ class MazeEditable(Maze):
                         self.draw()
 
             pygame.display.update()
+
+
+class MazeSolver:
+
+    def __init__(self):
+        pass
+
+    def move_character(self):
+        pass
+
+    # Maze solving algorithms section
+
+    def breadth_first_search(self):
+        pass
