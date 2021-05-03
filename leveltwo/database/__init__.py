@@ -1,5 +1,5 @@
 from .database import Database
-from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
+from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO, TestDBO, TestContentDBO
 
 from .init.insert_all import insert_all
 from .init.insert_objects import insert_objects

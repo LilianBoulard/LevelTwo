@@ -64,7 +64,7 @@ class LevelContentDBO(Base):
         self.value = value
 
 
-class Test(Base):
+class TestDBO(Base):
     __tablename__ = "tests"
 
     id = Column(Integer, primary_key=True)
@@ -77,7 +77,7 @@ class Test(Base):
         self.run_date = run_date
 
 
-class TestsContentDBO(Base):
+class TestContentDBO(Base):
     __tablename__ = "tests_content"
 
     id = Column(Integer, primary_key=True)

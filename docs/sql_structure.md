@@ -45,7 +45,7 @@ It contains five tables:
 ### `tests`
 
 - Goal: hold information about each test performed
-- 3 columns:
+- 4 columns:
   1. ``id`` - primary identifier
   2. ``level_id`` - the ID of the level the test ran on
   3. ``algorithm`` - the name of the algorithm used for this test
