@@ -72,7 +72,7 @@ class Test(Base):
     algorithm = Column(String(8))
     run_date = Column(Date, default=datetime.utcnow())
 
-    def __init__(self, algorithm, run_date: datetime):
+    def __init__(self, algorithm: str, run_date: datetime):
         self.algorithm = algorithm
         self.run_date = run_date
 
