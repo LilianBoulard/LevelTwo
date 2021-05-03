@@ -45,11 +45,12 @@ class LevelEditor(Display):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.level_selected = 1  # 1-indexed
+        self.new_level_size = 20
         self.display_menu()
 
     def display_menu(self):
 
-        def on_selector_change(struct: tuple, selection: int):
+        def on_selector_change(_: tuple, selection: int):
             self.level_selected = selection
 
         screen = self.get_screen()
@@ -65,7 +66,7 @@ class LevelEditor(Display):
         menu.add.button('Edit', self.edit, *edit_args)
 
         create_args = []
-        menu.add.button('Create', self.getprops, *create_args)
+        menu.add.button('Create', self.create, *create_args)
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
@@ -79,9 +80,9 @@ class LevelEditor(Display):
         maze.run()
         self.get_screen()
 
-    def getprops(self):
+    def create(self):
 
-        def on_selector_change(struct: tuple, selection: int):
+        def on_selector_change(_: tuple, selection: int):
             self.new_level_size = selection
 
         menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
@@ -89,13 +90,14 @@ class LevelEditor(Display):
         menu.add.selector('Size : ',
                           [('Small', 10), ('Medium', 20), ('Large', 30)],
                           onchange=on_selector_change)
-        menu.add.button('Save', self.create)
+        menu.add.button('Create', self.create_new_level)
         menu.add.button('Cancel', self.display_menu)
         menu.mainloop(self.get_screen())
 
-    def create(self):
+    def create_new_level(self):
         # Create new level
-        new_level = GenericLevel.create_new_level()
+        size = (self.new_level_size, self.new_level_size)
+        new_level = GenericLevel.create_new_level(size)
         maze = MazeEditable(parent_display=self, level=new_level)
         maze.run()
         self.get_screen()
@@ -111,7 +113,7 @@ class Play(Display):
 
     def display_menu(self):
 
-        def on_selector_change(struct: tuple, selection: int):
+        def on_selector_change(_: tuple, selection: int):
             self.level_selected = selection
 
         screen = self.get_screen()
@@ -130,7 +132,6 @@ class Play(Display):
 
         play_args = []  # Positional args to be passed to the callback below.
         menu.add.button('Play', self.play, *play_args)
-        menu.add.button('Create')
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
@@ -138,10 +139,6 @@ class Play(Display):
         menu.mainloop(screen)
 
     def play(self):
-
-        def on_selector_change(struct: tuple, selection: int):
-            self.algorithm_selected = selection
-
         level = self.db.construct_level(self.level_selected)
         maze = MazeDisplay(parent_display=self, level=level)
         maze.run()
