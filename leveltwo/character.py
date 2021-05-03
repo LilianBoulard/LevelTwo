@@ -1,5 +1,3 @@
-from time import time
-from math import floor
 from typing import Tuple
 from functools import wraps
 
@@ -72,8 +70,14 @@ class Character:
         self.location_y: int = start_location_y
         self._update_location()
 
+        # Self-explanatory
+        # Contains the steps the character took to arrive at its current destination
+        # It is appended each time `move_and_handle_object_effect()` is called
+        # (depending on some conditions)
+        self.path = [self.location]
+
         self._alive: bool = True
-        self._stunned_until: int = 0
+        self._stunned_for: int = 0
 
     # State verification methods.
     # These methods mustn't be decorated with `assert_state`.
@@ -85,7 +89,7 @@ class Character:
         """
         Returns whether the character is stunned.
         """
-        return time() > self._stunned_until
+        return self._stunned_for > 0
 
     def is_able(self) -> bool:
         return self.is_stunned()  # Use `and`
@@ -110,9 +114,9 @@ class Character:
     @assert_state('alive')
     def get_stunned(self, duration: int) -> None:
         """
-        Stuns the character for `duration` _seconds_.
+        Stuns the character for `duration` _steps_.
         """
-        self._stunned_until = floor(time() + duration)
+        self._stunned_for += duration
 
     @assert_state('alive', 'able')
     def move(self, x: int, y: int) -> None:
@@ -144,10 +148,14 @@ class Character:
         if not obj.traversable:
             return
 
+        self.path.append(self.location)
+
         try:
             self.move(x, y)
         except (Dead, Stunned):
             # If the character can't move, there is no use handling the object effect
+            if self._stunned_for > 0:
+                self._stunned_for -= 1
             return
 
         self.handle_object_effect(obj)

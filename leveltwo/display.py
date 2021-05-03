@@ -4,16 +4,12 @@ import pygame_menu
 from .config import Config
 from .database import Database
 from .level import GenericLevel
-from .maze import MazeEditable, MazeDisplay
+from .maze.editable import MazeEditable
+from .maze.playable import MazePlayable
 
 from typing import Tuple
 
-
 pygame.init()
-# Set font
-style = pygame.font.SysFont('calibri', 50)
-
-# timer = pygame.time.Clock()
 
 
 class Display:
@@ -140,8 +136,6 @@ class Play(Display):
 
     def play(self):
         level = self.db.construct_level(self.level_selected)
-        maze = MazeDisplay(parent_display=self, level=level)
+        maze = MazePlayable(parent_display=self, level=level)
         maze.run()
         self.get_screen()
-
-

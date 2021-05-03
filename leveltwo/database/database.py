@@ -11,9 +11,10 @@ from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 
 from .init import insert_objects, insert_levels, insert_levels_content
+from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO, TestDBO, TestContentDBO
+
 from ..object import GenericObject
 from ..level import GenericLevel, GenericLevelContent
-from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO, TestDBO, TestContentDBO
 
 
 class Database:
@@ -95,13 +96,15 @@ class Database:
             object_count = session.query(ObjectDBO.id).count()
             level_count = session.query(LevelDBO.id).count()
             level_content_count = session.query(LevelContentDBO.id).count()
-            tests = session.query(TestDBO.id).count()
-            tests_content = session.query(TestContentDBO.id).count()
+            tests_count = session.query(TestDBO.id).count()
+            tests_content_count = session.query(TestContentDBO.id).count()
 
         return {
             ObjectDBO.__tablename__: object_count,
             LevelDBO.__tablename__: level_count,
             LevelContentDBO.__tablename__: level_content_count,
+            TestDBO.__tablename__: tests_count,
+            TestContentDBO.__tablename__: tests_content_count
         }
 
     def update_level_content(self, level: GenericLevel) -> None:
@@ -133,7 +136,6 @@ class Database:
         # First, add the level
         with self.init_session() as session:
             level_dbo = level.to_dbo()
-            last_modification_date = level_dbo.last_modification_date.strftime("%m-%d-%Y")
             # Using arbitrary format ? Ouch...
             session.add(level_dbo)
         # Next, add the level's content
@@ -177,8 +179,8 @@ class Database:
     def construct_level(self, level_id: int) -> GenericLevel:
 
         def get_content(identifier: int) -> List[GenericLevelContent]:
-            with self.init_session() as session:
-                q = session.query(LevelContentDBO).filter_by(level_id=identifier).all()
+            with self.init_session() as s:
+                q = s.query(LevelContentDBO).filter_by(level_id=identifier).all()
                 content = [
                     GenericLevelContent(level_id=identifier, x=row.pos_x, y=row.pos_y, value=row.value)
                     for row in q
