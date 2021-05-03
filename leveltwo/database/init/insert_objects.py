@@ -22,5 +22,5 @@ def insert_objects(db):
 
     # Add objects to the database
     with db.init_session() as session:
-        for obj in [Empty(), StartingPoint(), ArrivalPoint(), Wall(), Mud(), Trap()]:
-            session.add(object_to_dbo_object(obj))
+        for obj in all_objects:
+            session.add(object_to_dbo_object(obj()))
