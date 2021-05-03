@@ -5,14 +5,15 @@ import leveltwo
 
 from typing import List
 from pathlib import Path
+from datetime import datetime
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 
 from .init import insert_objects, insert_levels, insert_levels_content
 from ..object import GenericObject
 from ..level import GenericLevel, GenericLevelContent
-from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO
+from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO, TestDBO, TestContentDBO
 
 
 class Database:
@@ -94,12 +95,66 @@ class Database:
             object_count = session.query(ObjectDBO.id).count()
             level_count = session.query(LevelDBO.id).count()
             level_content_count = session.query(LevelContentDBO.id).count()
+            tests = session.query(TestDBO.id).count()
+            tests_content = session.query(TestContentDBO.id).count()
 
         return {
             ObjectDBO.__tablename__: object_count,
             LevelDBO.__tablename__: level_count,
             LevelContentDBO.__tablename__: level_content_count,
         }
+
+    def update_level_content(self, level: GenericLevel) -> None:
+
+        level_id = level.identifier
+        if level_id is None or not self.level_exists(level_id):
+            # If the level does not exist already, we'll add it
+            self.add_new_level(level)
+        else:
+            # If the level already exists in the database
+            # First, update its content
+            s_x, s_y = level.content.shape
+            with self.init_session() as session:
+                for x in range(s_x):
+                    for y in range(s_y):
+                        cell = session.query(LevelContentDBO).filter(LevelContentDBO.level_id == level_id,
+                                                                     LevelContentDBO.pos_x == x,
+                                                                     LevelContentDBO.pos_y == y).one()
+                        cell.value = int(level.content[x, y])
+            # Next, update the modification date in the levels table
+            with self.init_session() as session:
+                level_dbo = session.query(LevelDBO).filter(LevelDBO.id == level_id).one()
+                level_dbo.last_modification_date = datetime.now()
+
+    def add_new_level(self, level: GenericLevel) -> None:
+        """
+        Takes a new generic level, and adds it to the database.
+        """
+        # First, add the level
+        with self.init_session() as session:
+            level_dbo = level.to_dbo()
+            last_modification_date = level_dbo.last_modification_date.strftime("%m-%d-%Y")
+            # Using arbitrary format ? Ouch...
+            session.add(level_dbo)
+        # Next, add the level's content
+        s_x, s_y = level.content.shape
+        with self.init_session() as session:
+            # Get the level id from the database
+            db_level = session.query(LevelDBO).filter(LevelDBO.name == level.name,
+                                                      LevelDBO.author == level.author).one()
+            for x in range(s_x):
+                for y in range(s_y):
+                    cell = LevelContentDBO(db_level.id, x, y, int(level.content[x, y]))
+                    session.add(cell)
+
+    def level_exists(self, level_id: int) -> bool:
+        """
+        Checks if a level exists in the database based on its ID.
+        Returns True if it does, False otherwise.
+        """
+        with self.init_session() as session:
+            b = session.query(exists().where(LevelDBO.id == level_id)).scalar()
+        return b
 
     def get_all_levels(self) -> List[GenericLevel]:
         with self.init_session() as session:
@@ -123,7 +178,7 @@ class Database:
 
         def get_content(identifier: int) -> List[GenericLevelContent]:
             with self.init_session() as session:
-                q = session.query(LevelContentDBO).all()
+                q = session.query(LevelContentDBO).filter_by(level_id=identifier).all()
                 content = [
                     GenericLevelContent(level_id=identifier, x=row.pos_x, y=row.pos_y, value=row.value)
                     for row in q

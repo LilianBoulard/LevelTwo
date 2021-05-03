@@ -1,9 +1,11 @@
 import numpy as np
 
+from typing import Tuple
 from datetime import datetime
 
 from .object import GenericObject
-from .utils import string_to_list
+from .utils import string_to_list, list_to_string
+from .database.models import LevelDBO
 
 
 class GenericLevel:
@@ -17,7 +19,7 @@ class GenericLevel:
         self.last_modification_date = last_modification_date
 
     @classmethod
-    def from_dbo(cls, dbo):
+    def from_dbo(cls, dbo: LevelDBO):
         """
         Takes a Levels Database Object (LevelsDBO, see `database/models.py`),
         and creates a new GenericLevel instance from the information it contains.
@@ -30,21 +32,23 @@ class GenericLevel:
         last_modification_date = dbo.last_modification_date
         return cls(identifier, name, author, content, creation_date, last_modification_date)
 
+    def to_dbo(self) -> LevelDBO:
+        name = self.name
+        author = self.author
+        shape = list_to_string(self.content.shape)
+        creation_date = datetime.now()
+        last_modification_date = datetime.now()
+        return LevelDBO(name, author, shape, creation_date, last_modification_date)
+
     @classmethod
-    def create_new_level(cls):
+    def create_new_level(cls, size: Tuple[int, int]):
         identifier = None
         name = 'New level'
         author = 'New user'
-        content = np.ones((25, 25), dtype='int16')
+        content = np.ones(size, dtype='int16')
         creation_date = datetime.utcnow()
         last_modification_date = datetime.utcnow()
         return cls(identifier, name, author, content, creation_date, last_modification_date)
-
-    def write(self) -> None:
-        """
-        Writes own content to the database.
-        """
-        pass
 
     def get_number_of_objects_in(self, object_id: int) -> int:
         """
@@ -60,9 +64,26 @@ class GenericLevel:
         occurrences = self.get_number_of_objects_in(obj.identifier)
         return obj.min_instances <= occurrences <= obj.max_instances
 
-    def set_cell_object(self, x: int, y: int, obj: GenericObject):
+    def set_cell_object(self, x: int, y: int, obj: GenericObject) -> None:
         if self.get_number_of_objects_in(obj.identifier) < obj.max_instances:
             self.content[x, y] = obj.identifier
+
+    def _get_object_coordinates(self, object_id: int) -> np.array:
+        return np.argwhere(self.content == object_id)
+
+    def get_starting_point_position(self) -> Tuple[int, int]:
+        """
+        Returns the `x` and `y` coordinates of the starting point in the level.
+        """
+        starting_point_index = 2
+        cell_indexes = self._get_object_coordinates(starting_point_index)
+
+        # If we don't find exactly one starting point, we raise an error
+        if len(cell_indexes) != 1:
+            raise ValueError('Invalid starting point')
+
+        cell_index = cell_indexes[0]
+        return cell_index[0], cell_index[1]
 
 
 class GenericLevelContent:

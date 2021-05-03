@@ -103,10 +103,10 @@ class Maze:
         remainder_x = x - (x_cells * z)
         remainder_y = y - (y_cells * z)
 
-        if remainder_x > 0 or remainder_y > 0:
-            new_x = x - remainder_x
-            new_y = y - remainder_y
-            self.resize(new_x, new_y, self.draw_grid())
+        #if remainder_x > 0 or remainder_y > 0:
+        #    new_x = x - remainder_x
+        #    new_y = y - remainder_y
+        #    self.resize(new_x, new_y, self.draw_grid())
 
         return z, z
 
@@ -184,7 +184,14 @@ class MazeDisplay(Maze):
         self.character = Character(*starting_point_location)
 
     def draw_character(self):
-        pass
+        # Compute coordinates
+        x = self.character.location_x
+        y = self.character.location_y
+        origin_x, origin_y, end_x, end_y = self.cells_coordinates_matrix[x, y]
+        center_x = (end_x - origin_x) // 2
+        center_y = (end_y - origin_y) // 2
+        # Draw circle
+        pygame.draw.circle(self.screen, Colors.RED, (center_x, center_y), 20)
 
     def draw(self):
         self.draw_grid()
@@ -194,7 +201,7 @@ class MazeDisplay(Maze):
         """
         Main loop.
         """
-        self.draw_grid()
+        self.draw()
         while self._running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -210,6 +217,7 @@ class MazeEditable(Maze):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buttons_coordinates_matrix = np.empty((len(self.objects), 4))
+        self.manipulation_buttons: Dict[str, pygame.Rect] = {}
 
     def draw(self):
         self.draw_grid()
@@ -283,10 +291,22 @@ class MazeEditable(Maze):
             # And update the matrix
             self.buttons_coordinates_matrix[i] = np.array([origin_x, origin_y, end_x, end_y])
 
-        save_label = label.render("Save", True ,Colors.BLACK)
+        # Starting from the window lower edge, we'll display the labels up `n` pixels
+        n = 100
+        manipulation_labels_y = viewport_end_y - n
+
+        save_label = label.render("Save", True, Colors.BLACK)
+        save_label_x = x
+        # Display label
+        save_button = self.screen.blit(save_label, (save_label_x, manipulation_labels_y))
+        # And add the button to the manipulation buttons list.
+        # We'll use the method `collidepoint` on it.
+        self.manipulation_buttons.update({'save': save_button})
+
         cancel_label = label.render("Cancel", True, Colors.BLACK)
-        self.screen.blit(save_label, (x, 500))
-        self.screen.blit(cancel_label, (x + 300, 500))
+        cancel_label_x = x + save_label.get_width() + left_margin
+        cancel_button = self.screen.blit(cancel_label, (cancel_label_x, manipulation_labels_y))
+        self.manipulation_buttons.update({'cancel': cancel_button})
 
     def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> bound_struct:
         """
@@ -328,6 +348,24 @@ class MazeEditable(Maze):
         except (TypeError, IndexError):
             return
 
+    def save(self) -> None:
+        all_objects_in_bounds: bool = all(
+            [
+                self.level.is_object_occurrences_in_limits(obj)
+                for obj in self.objects
+            ]
+        )
+        if all_objects_in_bounds:
+            db = Database()
+            db.update_level_content(self.level)
+            self._running = False
+        else:
+            # Add popup to signal the issue
+            pass
+
+    def cancel(self) -> None:
+        self._running = False
+
     def run(self) -> None:
         """
         Main loop.
@@ -351,6 +389,14 @@ class MazeEditable(Maze):
 
                 if selected_viewport.name == 'toolbox':  # If in the toolbox area.
                     if event.type == pygame.MOUSEBUTTONDOWN:
+
+                        for label, button in self.manipulation_buttons.items():
+                            if button.collidepoint(mouse_x, mouse_y):
+                                if label == 'save':
+                                    self.save()
+                                elif label == 'cancel':
+                                    self.cancel()
+
                         idx = self.get_clicked_button_index(mouse_x, mouse_y)
                         if isinstance(idx, int):
                             selected_object = self.objects[idx]
