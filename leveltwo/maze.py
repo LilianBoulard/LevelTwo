@@ -41,28 +41,29 @@ class Maze:
         self.viewports: Dict[str, Viewport] = {}
 
         self.screen_size = self.parent.screen_size
-        self.screen = pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.screen_size)
         self.adjust_style()
 
         self._running: bool = True
 
     def get_selected_viewport(self, x: int, y: int) -> Viewport:
         """
-        Given `x` and `y`, returns the name of the viewport the user clicked in.
+        Given `x` and `y`, returns the viewport the user clicked in.
         """
         for viewport in self.viewports.values():
             if viewport.inside(x, y):
                 return viewport
 
-        x, y, = self.screen_size
-        return Viewport('outside', (0, 0, x, y))
+        # Create dummy viewport that spans the entire window.
+        max_x, max_y, = self.screen_size
+        return Viewport('outside', (0, 0, max_x, max_y))
 
     def resize(self, x: int, y: int):
         """
         Resize window.
         """
         self.screen_size = (x, y)
-        self.screen = pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.screen_size)
         pygame.display.set_caption(self.level.name)  # Set the window title
         self.draw_grid()
         self.adjust_style()
