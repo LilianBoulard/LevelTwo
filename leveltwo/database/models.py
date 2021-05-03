@@ -72,7 +72,8 @@ class TestDBO(Base):
     algorithm = Column(String(8))
     run_date = Column(Date, default=datetime.utcnow())
 
-    def __init__(self, algorithm: str, run_date: datetime):
+    def __init__(self, level_id: int, algorithm: str, run_date: datetime):
+        self.level_id = level_id
         self.algorithm = algorithm
         self.run_date = run_date
 
