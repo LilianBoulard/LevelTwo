@@ -419,11 +419,81 @@ class MazeEditable(Maze):
 
 class MazeSolver:
 
-    def __init__(self):
-        pass
+    def __init__(self, level: GenericLevel, character: Character):
+        self.level = level
+        self.character = character
 
-    def move_character(self):
-        pass
+        db = Database()
+        self.objects = db.get_all_objects()
+
+    def move_character_hexagonal_grid(self, direction: int, amount: int = 1):
+        """
+        Changes the position of the character by `amount` cell(s) on an hexagonal grid.
+
+        :param int direction: Direction the character should move to.
+                              Mapping:
+                              0: up
+                              1: left-up
+                              2: left-down
+                              3: down
+                              4: right-down
+                              5: right-up
+        :param int amount: How many cells it will try to move. Default is 1.
+        """
+        if direction not in range(4):
+            raise ValueError(f'Invalid direction {direction!r}, should be an integer between 0 and 5 included.')
+
+        x = new_x = self.character.location_x
+        y = new_y = self.character.location_y
+
+        for _ in range(amount):
+            if direction == 0:
+                pass
+            elif direction == 1:
+                pass
+            elif direction == 2:
+                pass
+            elif direction == 3:
+                pass
+            elif direction == 4:
+                pass
+            elif direction == 5:
+                pass
+
+    def move_character_square_grid(self, direction: int, amount: int = 1):
+        """
+        Changes the position of the character by `amount` cell(s) on a squared grid.
+
+        :param int direction: Direction the character should move to.
+                              Mapping:
+                              0: up
+                              1: left
+                              2: down
+                              3: right
+        :param int amount: How many cells it will try to move. Default is 1.
+        """
+        if direction not in range(4):
+            raise ValueError(f'Invalid direction {direction!r}, should be an integer between 0 and 3 included.')
+
+        x = new_x = self.character.location_x
+        y = new_y = self.character.location_y
+
+        for _ in range(amount):
+            if direction == 0:
+                new_y -= 1
+            elif direction == 1:
+                new_x -= 1
+            elif direction == 2:
+                new_y += 1
+            elif direction == 3:
+                new_x += 1
+
+            # Get the object which is on our path
+            next_step_cell_object_id = self.level.content[new_x, new_y]
+            next_step_cell_object = self.objects[next_step_cell_object_id]
+
+            if next_step_cell_object.traversable:
+                self.character.move_and_handle_object_effect(new_x, new_y, next_step_cell_object)
 
     # Maze solving algorithms section
 
