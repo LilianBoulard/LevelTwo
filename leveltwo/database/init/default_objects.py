@@ -44,7 +44,7 @@ class Wall(GenericObject):
     """
     def __init__(self):
         name = "wall"
-        effect = Effects.PLAYER_STOP
+        effect = Effects.NONE
         traversable = False
         min_instances = 25
         max_instances = 100
