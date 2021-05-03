@@ -62,3 +62,32 @@ class LevelContentDBO(Base):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.value = value
+
+
+class Test(Base):
+    __tablename__ = "tests"
+
+    id = Column(Integer, primary_key=True)
+    level_id = Column(ForeignKey('levels.id', ondelete='CASCADE'))
+    algorithm = Column(String(8))
+    run_date = Column(Date, default=datetime.utcnow())
+
+    def __init__(self, algorithm, run_date: datetime):
+        self.algorithm = algorithm
+        self.run_date = run_date
+
+
+class TestsContentDBO(Base):
+    __tablename__ = "tests_content"
+
+    id = Column(Integer, primary_key=True)
+    test_id = Column(ForeignKey('tests.id', ondelete='CASCADE'))
+    step = Column(Integer)
+    pos_x = Column(Integer)
+    pos_y = Column(Integer)
+
+    def __init__(self, level_result_id: int, pos_x: int, pos_y: int, step: int):
+        self.level_result_id = level_result_id
+        self.step = step
+        self.pos_x = pos_x
+        self.pos_y = pos_y
