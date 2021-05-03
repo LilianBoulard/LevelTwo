@@ -1,5 +1,7 @@
 import pygame
 import numpy as np
+from tkinter import *
+from tkinter import messagebox
 
 from typing import Tuple, Optional, Dict
 
@@ -359,8 +361,11 @@ class MazeEditable(Maze):
             db = Database()
             db.update_level_content(self.level)
             self._running = False
+
         else:
             # Add popup to signal the issue
+            Tk().wm_withdraw()  # to hide the main window
+            messagebox.showwarning('WARNING', 'Please add a starting point')
             pass
 
     def cancel(self) -> None:
