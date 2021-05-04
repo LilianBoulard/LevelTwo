@@ -165,8 +165,11 @@ class Database:
             # Finally, remove tests that ran on the older level version
             with self.init_session() as session:
                 q = session.query(TestDBO).filter_by(level_id=level_id).all()
-                for t in q:
-                    session.delete(t)
+                for row in q:
+                    # Delete the test
+                    session.delete(row)
+                    # Delete the content of the test
+                    session.query(TestContentDBO).filter_by(test_id=row.id).delete()
 
     def add_new_level(self, level: GenericLevel) -> None:
         """
@@ -257,5 +260,5 @@ class Database:
         with self.init_session() as session:
             for step_index, step_pos in enumerate(test.steps):
                 pos_x, pos_y = step_pos
-                step = TestContentDBO(test_id, step_index, pos_x, pos_y)
+                step = TestContentDBO(test_id, step_index, int(pos_x), int(pos_y))
                 session.add(step)
