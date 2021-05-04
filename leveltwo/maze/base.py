@@ -130,7 +130,10 @@ class Maze:
                 cell = self.level.content[i_x, i_y] - 1  # objects are 1-indexed in the level content
                 # Draw the rectangle.
                 rect = pygame.Rect(x, y, z_x, z_y)
-                color = ObjectToColor[self.objects[cell].name].value
+                try:
+                    color = ObjectToColor[self.objects[cell].name].value
+                except IndexError:
+                    color = (0, 0, 0)
                 pygame.draw.rect(self.screen, color, rect)
 
         # Update viewport
