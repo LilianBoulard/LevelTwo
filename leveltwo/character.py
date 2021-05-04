@@ -119,7 +119,7 @@ class Character:
         self._stunned_for += duration
 
     @assert_state('alive', 'able')
-    def move(self, x: int, y: int) -> None:
+    def _move(self, x: int, y: int) -> None:
         self.location_x = x
         self.location_y = y
         self._update_location()
@@ -128,6 +128,9 @@ class Character:
 
     def _update_location(self) -> None:
         self.location: Tuple[int, int] = (self.location_x, self.location_y)
+
+    def append_location_to_path(self) -> None:
+        self.path.append(self.location)
 
     def handle_object_effect(self, obj: GenericObject) -> None:
         """
@@ -140,6 +143,8 @@ class Character:
             self.get_stunned(1)
         elif effect == Effects.PLAYER_KILL:
             self.die()
+        elif effect == Effects.LEVEL_FINISH:
+            self.append_location_to_path()
 
     def move_and_handle_object_effect(self, x: int, y: int, obj: GenericObject) -> None:
         """
@@ -148,10 +153,10 @@ class Character:
         if not obj.traversable:
             return
 
-        self.path.append(self.location)
+        self.append_location_to_path()
 
         try:
-            self.move(x, y)
+            self._move(x, y)
         except (Dead, Stunned):
             # If the character can't move, there is no use handling the object effect
             if self._stunned_for > 0:
