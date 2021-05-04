@@ -18,7 +18,8 @@ class MazePlayable(Maze):
         y = starting_point_location[1]
         print(x , y)
         self.character = Character(*starting_point_location)
-        self.solver = MazeSolverSquare(self.level, self.character).recursive_walk(x, y)
+        #solver = MazeSolverSquare(self.level, self.character).recursive_walk(x, y)
+        solver = MazeSolverSquare(self.level, self.character).astar()
 
     def draw_character(self):
         # Compute coordinates
