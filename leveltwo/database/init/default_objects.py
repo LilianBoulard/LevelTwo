@@ -7,7 +7,7 @@ class Empty(GenericObject):
     Empty: Default object, doesn't do anything special.
     """
     def __init__(self):
-        name = "empty"
+        name = Empty.__name__.lower()
         effect = Effects.NONE
         traversable = True
         min_instances = 25
@@ -20,7 +20,7 @@ class StartingPoint(GenericObject):
     Start : beginning point of a level.
     """
     def __init__(self):
-        name = "start"
+        name = StartingPoint.__name__.lower()
         effect = Effects.NONE
         traversable = True
         min_instances = 1
@@ -30,7 +30,7 @@ class StartingPoint(GenericObject):
 
 class ArrivalPoint(GenericObject):
     def __init__(self):
-        name = "arrival"
+        name = ArrivalPoint.__name__.lower()
         effect = Effects.LEVEL_FINISH
         traversable = True
         min_instances = 1
@@ -43,7 +43,7 @@ class Wall(GenericObject):
     Wall : the character can't go past this obstacle.
     """
     def __init__(self):
-        name = "wall"
+        name = Wall.__name__.lower()
         effect = Effects.NONE
         traversable = False
         min_instances = 25
@@ -56,7 +56,7 @@ class Mud(GenericObject):
     Mud : slows the character when walked on.
     """
     def __init__(self):
-        name = "mud"
+        name = Mud.__name__.lower()
         effect = Effects.PLAYER_SLOW
         traversable = True
         min_instances = 5
@@ -69,7 +69,7 @@ class Trap(GenericObject):
     Trap : Kills the player when stepped on.
     """
     def __init__(self):
-        name = "trap"
+        name = Trap.__name__.lower()
         effect = Effects.PLAYER_KILL
         traversable = True
         min_instances = 2
