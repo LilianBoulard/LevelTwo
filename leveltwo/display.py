@@ -6,7 +6,8 @@ from .database import Database
 from .level import GenericLevel
 from .maze.editable import MazeEditable
 from .maze.playable import MazePlayable
-from .maze.solver.square import MazeSolverSquare
+
+from .maze.algorithm.square import Tremaux, Manual
 
 from typing import Tuple
 
@@ -103,7 +104,7 @@ class Play(Display):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.level_selected = 1  # 1-indexed
-        self.algorithm_selected = MazeSolverSquare.manual
+        self.algorithm_selected = Manual
         self.display_menu()
 
     def display_menu(self):
@@ -126,8 +127,8 @@ class Play(Display):
         # Algorithm selector
         menu.add.selector('Algorithm: ',
                           [
-                              ('Manual', MazeSolverSquare.manual),
-                              ('Breadth First Search', MazeSolverSquare.breadth_first_search)
+                              ('Manual', Manual),
+                              ('Trémaux', Tremaux)
                           ],
                           onchange=on_algorithm_change)
 
@@ -159,9 +160,8 @@ class Play(Display):
         level = self.db.construct_level(self.level_selected)
         all_tests = self.db.get_tests_by_level_id(level.identifier)
         for test in all_tests:
-            menu.add.button(f'{test.run_date} ({len(test.steps)} steps)', run_test, test)
+            menu.add.button(f'{test.run_date} | {test.algorithm} ({len(test.steps)} steps)', run_test, test)
         else:
             menu.add.button('Back to main menu', self.display_menu)
 
         menu.mainloop(screen)
-
