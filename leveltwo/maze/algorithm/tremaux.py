@@ -2,4 +2,8 @@ from .base import MazeSolvingAlgorithm
 
 
 class Tremaux(MazeSolvingAlgorithm):
-    pass
+
+    name = "tremaux"
+
+    def run_one_step(self):
+        pass

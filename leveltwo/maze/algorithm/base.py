@@ -1,2 +1,4 @@
 class MazeSolvingAlgorithm:
-    pass
+
+    def run_one_step(self):
+        raise NotImplementedError()

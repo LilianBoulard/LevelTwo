@@ -2,4 +2,8 @@ from .base import MazeSolvingAlgorithm
 
 
 class Astar(MazeSolvingAlgorithm):
-    pass
+
+    name = "astar"
+
+    def run_one_step(self):
+        pass
