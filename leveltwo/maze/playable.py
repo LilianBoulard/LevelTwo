@@ -1,9 +1,12 @@
 import pygame
 
+from time import sleep
+
 from datetime import datetime
+from typing import Tuple, List
 
 from .base import Maze
-from .solver import MazeSolverSquare
+from .algorithm.square.base import MazeSolvingAlgorithm
 
 from ..test import Test
 from ..enums import Colors
@@ -19,40 +22,80 @@ class MazePlayable(Maze):
         super().__init__(*args, **kwargs)
         starting_point_location = self.level.get_starting_point_position()
         self.character = Character(*starting_point_location)
-        self.solver = MazeSolverSquare(self.level, self.character)
+        self.db = Database()
+        objects = self.db.get_all_objects()
+        self.level.set_objects(objects)
 
     def draw_character(self) -> None:
         # Compute coordinates
         x, y = self.character.location
-        origin_x, origin_y, end_x, end_y = self.cells_coordinates_matrix[x, y]
-        center_x = origin_x + ((end_x - origin_x) // 2)
-        center_y = origin_y + ((end_y - origin_y) // 2)
+        center_x, center_y = self.get_cell_center(x, y)
         # Draw circle
         pygame.draw.circle(self.screen, Colors.RED, (center_x, center_y), 20)
 
     def draw(self) -> None:
         self.draw_grid()
         self.draw_character()
+        pygame.display.update()
 
-    def rerun(self, test: Test, delay: int = 0.2) -> None:
+    def get_cell_center(self, x: int, y: int) -> Tuple[int, int]:
+        origin_x, origin_y, end_x, end_y = self.cells_coordinates_matrix[x, y]
+        center_x = origin_x + ((end_x - origin_x) // 2)
+        center_y = origin_y + ((end_y - origin_y) // 2)
+        return center_x, center_y
+
+    def rerun(self, test: Test, delay: int = 0.5) -> None:
         """
         Takes a test, and runs it so as to visualize the steps the algorithm took.
         :param Test test: the test to run
         :param int delay: how long we should wait before displaying each step.
         """
-        pass
+
+        def draw_path():
+            for line in path:
+                pygame.draw.line(self.screen, Colors.BLACK, *line)
+
+        self.draw()
+        path: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
+
+        delay = int(delay * 1000)  # Convert delay to milliseconds
+        last_step = test.steps[0]
+        for step in test.steps:
+            pygame.time.delay(delay)  # Wait
+
+            # Get the centers of this step and the last
+            cell_x, cell_y = step
+            cell_center_x, cell_center_y = self.get_cell_center(cell_x, cell_y)
+            last_cell_x, last_cell_y = last_step
+            last_step_center_x, last_step_center_y = self.get_cell_center(last_cell_x, last_cell_y)
+
+            # Move the character
+            self.character.move(cell_x, cell_y)
+
+            # And add a line between the two.
+            path.append(((cell_center_x, cell_center_y), (last_step_center_x, last_step_center_y)))
+
+            last_step = step
+
+            self.draw()
+            draw_path()
+            pygame.display.update()
+
+        pygame.time.delay(800)
 
     def run(self, algorithm) -> None:
         """
         Main loop.
         """
         algorithm_name: str = algorithm.__name__
-        manual: bool = algorithm_name == 'manual'
+        manual: bool = algorithm_name == 'Manual'
         save: bool = False
-        first_iter: bool = True
+        algo: MazeSolvingAlgorithm = algorithm(self.level, self.character)
 
         self.draw()
         while self._running:
+            key = None
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self._running = False
@@ -62,28 +105,23 @@ class MazePlayable(Maze):
                 if manual:
                     # If on manual mode (human-controller)
                     if event.type == pygame.KEYDOWN:
-                        self.solver.manual(event.key)
-                        if not self.solver.is_running():
-                            save = True
-                            self._running = False
-                        self.draw()
+                        key = event.key
 
-            if not manual:
-                # If not human-controller, advance the algorithm one step.
-                # To keep values between iterations, use the dictionary attribute `state`
+            # Keyword arguments to pass to the algorithm iteration.
+            kwargs = {}
 
-                # TODO: replace strings by __name__ attributes
+            if algorithm_name == 'Manual':
+                kwargs.update({
+                    'key': key
+                })
 
-                if first_iter:
-                    # Initialization part
-                    if algorithm_name == 'recursive_walk':
-                        x, y = self.character.location
-                        self.solver.state.update({
-                            'x': x,
-                            'y': y
-                        })
-
-                algorithm(self.solver)
+            # If not human-controller, advance the algorithm one step.
+            algo.run_one_step(**kwargs)
+            self.draw()
+            if not algo.is_running():
+                save = True
+                self._running = False
+            sleep(0.5)
 
             pygame.display.update()
 
@@ -94,5 +132,4 @@ class MazePlayable(Maze):
                         algorithm=algorithm_name,
                         steps=self.character.path,
                         run_date=datetime.now())
-            db = Database()
-            db.store_test(test)
+            self.db.store_test(test)
