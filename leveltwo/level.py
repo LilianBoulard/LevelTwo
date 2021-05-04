@@ -1,11 +1,11 @@
 import numpy as np
 
-from typing import Tuple
+from typing import Tuple, List
 from datetime import datetime
 
 from .object import GenericObject
-from .utils import string_to_list, list_to_string
 from .database.models import LevelDBO
+from .utils import string_to_list, list_to_string
 
 
 class GenericLevel:
@@ -18,6 +18,9 @@ class GenericLevel:
         self.content = content
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date
+
+        self.objects_map = None
+        self.objects = None
 
     @classmethod
     def from_dbo(cls, dbo: LevelDBO):
@@ -50,6 +53,23 @@ class GenericLevel:
         creation_date = datetime.utcnow()
         last_modification_date = datetime.utcnow()
         return cls(identifier, name, author, content, creation_date, last_modification_date)
+
+    def set_objects(self, objects: List[GenericObject]) -> None:
+        self.objects = objects
+
+    def construct_object_content(self):
+        """
+        Takes the content of the level, and converts the integers to GenericObjects.
+        Use sparsely, as it can be rather computationally expensive.
+        """
+        assert self.objects
+
+        self.object_map = np.empty(self.content.shape, dtype='object')
+        s_x, s_y = self.content.shape
+        for x in range(s_x):
+            for y in range(s_y):
+                object_id = self.content[x, y]
+                self.object_map[x, y] = self.objects[object_id - 1]
 
     def get_number_of_objects_in(self, object_id: int) -> int:
         """
