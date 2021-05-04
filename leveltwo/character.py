@@ -119,7 +119,7 @@ class Character:
         self._stunned_for += duration
 
     @assert_state('alive', 'able')
-    def _move(self, x: int, y: int) -> None:
+    def move(self, x: int, y: int) -> None:
         self.location_x = x
         self.location_y = y
         self._update_location()
@@ -156,7 +156,7 @@ class Character:
         self.append_location_to_path()
 
         try:
-            self._move(x, y)
+            self.move(x, y)
         except (Dead, Stunned):
             # If the character can't move, there is no use handling the object effect
             if self._stunned_for > 0:
