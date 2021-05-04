@@ -2,7 +2,6 @@ from .base import MazeSolvingAlgorithm
 
 
 class Tremaux(MazeSolvingAlgorithm):
-
     name = "tremaux"
 
     def __init__(self):
@@ -33,8 +32,6 @@ class Tremaux(MazeSolvingAlgorithm):
             return False
 
         print("empty")
-        self.step += 1
-        print(self.step)
 
         self.character.location[x][y]
         if ((x < len(self.level.content) - 1 and self.run_one_step(x + 1, y))
