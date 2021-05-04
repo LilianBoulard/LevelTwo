@@ -3,9 +3,9 @@ import logging
 import sqlite3
 import leveltwo
 
-from typing import List
 from pathlib import Path
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
@@ -14,6 +14,7 @@ from .init import insert_objects, insert_levels, insert_levels_content
 from .models import Base, ObjectDBO, LevelDBO, LevelContentDBO, TestDBO, TestContentDBO
 
 from ..object import GenericObject
+from ..test import Test, TestContent
 from ..level import GenericLevel, GenericLevelContent
 
 
@@ -48,6 +49,8 @@ class Database:
                 cls._instance.init_db()
 
         return cls._instance
+
+    # General operations section
 
     def init_db(self):
         logging.info('Initiating database')
@@ -107,47 +110,18 @@ class Database:
             TestContentDBO.__tablename__: tests_content_count
         }
 
-    def update_level_content(self, level: GenericLevel) -> None:
+    # Objects section
 
-        level_id = level.identifier
-        if level_id is None or not self.level_exists(level_id):
-            # If the level does not exist already, we'll add it
-            self.add_new_level(level)
-        else:
-            # If the level already exists in the database
-            # First, update its content
-            s_x, s_y = level.content.shape
-            with self.init_session() as session:
-                for x in range(s_x):
-                    for y in range(s_y):
-                        cell = session.query(LevelContentDBO).filter(LevelContentDBO.level_id == level_id,
-                                                                     LevelContentDBO.pos_x == x,
-                                                                     LevelContentDBO.pos_y == y).one()
-                        cell.value = int(level.content[x, y])
-            # Next, update the modification date in the levels table
-            with self.init_session() as session:
-                level_dbo = session.query(LevelDBO).filter(LevelDBO.id == level_id).one()
-                level_dbo.last_modification_date = datetime.now()
+    def get_all_objects(self) -> List[GenericObject]:
+        """
+        Returns a list of the objects in the database
+        """
+        with self.init_session() as session:
+            result = session.query(ObjectDBO).all()
+            objects = [GenericObject.from_dbo(row) for row in result]
+        return objects
 
-    def add_new_level(self, level: GenericLevel) -> None:
-        """
-        Takes a new generic level, and adds it to the database.
-        """
-        # First, add the level
-        with self.init_session() as session:
-            level_dbo = level.to_dbo()
-            # Using arbitrary format ? Ouch...
-            session.add(level_dbo)
-        # Next, add the level's content
-        s_x, s_y = level.content.shape
-        with self.init_session() as session:
-            # Get the level id from the database
-            db_level = session.query(LevelDBO).filter(LevelDBO.name == level.name,
-                                                      LevelDBO.author == level.author).one()
-            for x in range(s_x):
-                for y in range(s_y):
-                    cell = LevelContentDBO(db_level.id, x, y, int(level.content[x, y]))
-                    session.add(cell)
+    # Levels section
 
     def level_exists(self, level_id: int) -> bool:
         """
@@ -167,14 +141,53 @@ class Database:
                 levels.append(self.construct_level(level_id))
         return levels
 
-    def get_all_objects(self) -> List[GenericObject]:
+    def update_level_content(self, level: GenericLevel) -> None:
+
+        level_id = level.identifier
+        if level_id is None or not self.level_exists(level_id):
+            # If the level does not exist already, we'll add it
+            self.add_new_level(level)
+        else:
+            # If the level already exists in the database
+            # First, update its content
+            s_x, s_y = level.content.shape
+            with self.init_session() as session:
+                for x in range(s_x):
+                    for y in range(s_y):
+                        cell = session.query(LevelContentDBO).filter_by(level_id=level_id,
+                                                                        pos_x=x,
+                                                                        pos_y=y).one()
+                        cell.value = int(level.content[x, y])
+            # Next, update the modification date in the levels table
+            with self.init_session() as session:
+                level_dbo = session.query(LevelDBO).filter_by(id=level_id).one()
+                level_dbo.last_modification_date = datetime.now()
+            # Finally, remove tests that ran on the older level version
+            with self.init_session() as session:
+                q = session.query(TestDBO).filter_by(level_id=level_id).all()
+                for t in q:
+                    session.delete(t)
+
+    def add_new_level(self, level: GenericLevel) -> None:
         """
-        Returns a list of the objects in the database
+        Takes a new generic level, and adds it to the database.
         """
+        # First, add the level
         with self.init_session() as session:
-            result = session.query(ObjectDBO).all()
-            objects = [GenericObject.from_dbo(row) for row in result]
-        return objects
+            level_dbo = level.to_dbo()
+            # Using arbitrary format ? Ouch...
+            session.add(level_dbo)
+            # Refresh the session to get the inserted level id
+            session.flush()
+            session.refresh()
+            level_id = level_dbo.id
+        # Next, add the level's content
+        s_x, s_y = level.content.shape
+        with self.init_session() as session:
+            for x in range(s_x):
+                for y in range(s_y):
+                    cell = LevelContentDBO(level_id, x, y, int(level.content[x, y]))
+                    session.add(cell)
 
     def construct_level(self, level_id: int) -> GenericLevel:
 
@@ -197,3 +210,52 @@ class Database:
         for cell in mapping:
             level.content[cell.x, cell.y] = cell.value
         return level
+
+    # Tests section
+
+    def construct_test(self, test_id: int) -> Test:
+
+        def get_content(identifier: int) -> List[TestContent]:
+            with self.init_session() as s:
+                q = s.query(TestContentDBO).filter_by(test_id=identifier).all()
+                content = [
+                    TestContent(test_id=row.test_id, step=row.step, x=row.pos_x, y=row.pos_y)
+                    for row in q
+                ]
+            return content
+
+        with self.init_session() as session:
+            test = Test.from_dbo(session.query(TestDBO).filter_by(id=test_id).one())
+
+        mapping = get_content(test.identifier)
+        for step in mapping:
+            test.steps[step.step] = (step.x, step.y)
+        return test
+
+    def get_tests_by_level_id(self, level_id: int) -> List[Test]:
+        test_list = []
+        with self.init_session() as session:
+            q = session.query(TestDBO.id).filter_by(level_id=level_id).all()
+            for content in q:
+                for test_id in content:
+                    test_list.append(self.construct_test(test_id))
+        return test_list
+
+    def store_test(self, test: Test) -> None:
+        """
+        Takes information about a test, and stores it into the database.
+        """
+        # First, add the test
+        with self.init_session() as session:
+            test_dbo = test.to_dbo()
+            session.add(test_dbo)
+            # Refresh the session to get the inserted test id
+            session.flush()
+            session.refresh(test_dbo)
+            test_id = test_dbo.id
+        # Next, add the content of the test
+        with self.init_session() as session:
+            for step_index, step_pos in enumerate(test.steps):
+                pos_x, pos_y = step_pos
+                step = TestContentDBO(test_id, step_index, pos_x, pos_y)
+                session.add(step)
