@@ -9,6 +9,7 @@ from .database.models import LevelDBO
 
 
 class GenericLevel:
+
     def __init__(self, identifier: int, name: str, author: str, content: np.array,
                  creation_date: datetime, last_modification_date: datetime):
         self.identifier = identifier
@@ -85,18 +86,25 @@ class GenericLevel:
         cell_index = cell_indexes[0]
         return cell_index[0], cell_index[1]
 
+    def get_arrival_point_position(self) -> Tuple[int, int]:
+        """
+        Returns the `x` and `y` coordinates of the arrival point in the level.
+        """
+        arrival_point_index = 3
+        cell_indexes = self._get_object_coordinates(arrival_point_index)
+
+        # If we don't find exactly one arrival point, we raise an error
+        if len(cell_indexes) != 1:
+            raise ValueError('Invalid arrival point')
+
+        cell_index = cell_indexes[0]
+        return cell_index[0], cell_index[1]
+
 
 class GenericLevelContent:
+
     def __init__(self, level_id: int, x: int, y: int, value: int):
         self.level_id = level_id
         self.x = x
         self.y = y
         self.value = value
-
-    @classmethod
-    def from_dbo(cls, dbo):
-        level_id = dbo.level_id
-        x = dbo.x
-        y = dbo.y
-        value = dbo.value
-        cls(level_id, x, y, value)
