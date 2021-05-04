@@ -69,12 +69,14 @@ class TestDBO(Base):
 
     id = Column(Integer, primary_key=True)
     level_id = Column(ForeignKey('levels.id', ondelete='CASCADE'))
-    algorithm = Column(String(8))
+    algorithm = Column(String(32))
+    steps_number = Column(Integer)
     run_date = Column(Date, default=datetime.utcnow())
 
-    def __init__(self, level_id: int, algorithm: str, run_date: datetime):
+    def __init__(self, level_id: int, algorithm: str, steps_number: int, run_date: datetime):
         self.level_id = level_id
         self.algorithm = algorithm
+        self.steps_number = steps_number
         self.run_date = run_date
 
 
@@ -87,8 +89,8 @@ class TestContentDBO(Base):
     pos_x = Column(Integer)
     pos_y = Column(Integer)
 
-    def __init__(self, level_result_id: int, pos_x: int, pos_y: int, step: int):
-        self.level_result_id = level_result_id
+    def __init__(self, test_id: int, step: int, pos_x: int, pos_y: int):
+        self.test_id = test_id
         self.step = step
         self.pos_x = pos_x
         self.pos_y = pos_y

@@ -45,11 +45,12 @@ It contains five tables:
 ### `tests`
 
 - Goal: hold information about each test performed
-- 4 columns:
+- 5 columns:
   1. ``id`` - primary identifier
   2. ``level_id`` - the ID of the level the test ran on
   3. ``algorithm`` - the name of the algorithm used for this test
-  4. ``run_date`` - the date the test was ran
+  4. ``steps_number`` - how many steps the test contains
+  5. ``run_date`` - the date the test was ran
 
 
 ### `tests_content`
