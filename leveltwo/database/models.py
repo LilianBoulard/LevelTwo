@@ -5,6 +5,7 @@ Defines the database models.
 from datetime import datetime
 
 from sqlalchemy import Column, Date, Integer, String, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -71,6 +72,7 @@ class TestDBO(Base):
     level_id = Column(ForeignKey('levels.id', ondelete='CASCADE'))
     algorithm = Column(String(32))
     steps_number = Column(Integer)
+    content = relationship("TestContentDBO", back_populates="test", passive_deletes=True)
     run_date = Column(Date, default=datetime.utcnow())
 
     def __init__(self, level_id: int, algorithm: str, steps_number: int, run_date: datetime):
@@ -84,7 +86,8 @@ class TestContentDBO(Base):
     __tablename__ = "tests_content"
 
     id = Column(Integer, primary_key=True)
-    test_id = Column(ForeignKey('tests.id', ondelete='CASCADE'))
+    test_id = Column(ForeignKey('tests.id', ondelete='CASCADE'), nullable=False)
+    test = relationship("TestDBO", back_populates="content")
     step = Column(Integer)
     pos_x = Column(Integer)
     pos_y = Column(Integer)
