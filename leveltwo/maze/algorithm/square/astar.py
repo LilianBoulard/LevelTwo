@@ -7,7 +7,8 @@ class Astar(MazeSolvingAlgorithm):
 
     name = "astar"
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.opened = []
         heapq.heapify(self.opened)
         self.closed = set()

@@ -1,14 +1,37 @@
-import heapq
-
 import pygame
 
-from .base import MazeSolver
+from .base import MazeSolvingAlgorithm
 
-pygame.init()
+from ....enums import Effects
 
 
-class MazeSolverSquare(MazeSolver):
-    step = 0
+class Manual(MazeSolvingAlgorithm):
+
+    name = "manual"
+    inputs = {
+        'up': pygame.key.key_code('Z'),
+        'left': pygame.key.key_code('Q'),
+        'down': pygame.key.key_code('S'),
+        'right': pygame.key.key_code('D'),
+    }
+
+    def run_one_step(self, key) -> None:
+        if not key:
+            return
+
+        if key == self.inputs['up']:
+            # Go up
+            self.move_character(0)
+        elif key == self.inputs['left']:
+            # Go left
+            self.move_character(1)
+        elif key == self.inputs['down']:
+            # Go down
+            self.move_character(2)
+        elif key == self.inputs['right']:
+            # Go right
+            self.move_character(3)
+
     def move_character(self, direction: int, amount: int = 1) -> None:
         """
         Changes the position of the character by `amount` cell(s) on a squared grid.
@@ -46,36 +69,9 @@ class MazeSolverSquare(MazeSolver):
 
                 if next_step_cell_object.traversable:
                     self.character.move_and_handle_object_effect(new_x, new_y, next_step_cell_object)
+                    if next_step_cell_object.effect == Effects.LEVEL_FINISH:
+                        self._running = False
 
-    # Maze solving algorithms section
-
-    def manual(self, event_key) -> None:
-        inputs = {
-            'up': pygame.key.key_code('Z'),
-            'left': pygame.key.key_code('Q'),
-            'down': pygame.key.key_code('S'),
-            'right': pygame.key.key_code('D'),
-        }
-
-        if event_key == inputs['up']:
-            # Go up
-            self.move_character(0)
-        elif event_key == inputs['left']:
-            # Go left
-            self.move_character(1)
-        elif event_key == inputs['down']:
-            # Go down
-            self.move_character(2)
-        elif event_key == inputs['right']:
-            # Go right
-            self.move_character(3)
-
-    def breadth_first_search(self) -> None:
-        pass
-
-    # Astar Section
-    def astar(self) -> None:
-        print("A*")
-
-
-
+                # If the character is dead, end.
+                if not self.character.is_alive():
+                    self._running = False
