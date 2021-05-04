@@ -121,7 +121,9 @@ class MazePlayable(Maze):
             if not algo.is_running():
                 save = True
                 self._running = False
-            sleep(0.5)
+
+            if not manual:
+                sleep(0.5)
 
             pygame.display.update()
 
