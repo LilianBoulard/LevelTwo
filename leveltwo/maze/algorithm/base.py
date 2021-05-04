@@ -1,0 +1,2 @@
+class MazeSolvingAlgorithm:
+    pass
