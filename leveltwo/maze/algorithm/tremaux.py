@@ -8,6 +8,7 @@ class Tremaux(MazeSolvingAlgorithm):
         level = self.level
 
     def run_one_step(self):
+        print("test")
         x, y = self.character.location
 
         up_cell_value = self.level.content[x, y - 1]
