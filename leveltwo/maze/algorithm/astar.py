@@ -7,6 +7,16 @@ class Astar(MazeSolvingAlgorithm):
 
     name = "astar"
 
+    def __init__(self):
+        self.opened = []
+        heapq.heapify(self.opened)
+        self.closed = set()
+        self.cells = self.level.content
+        self.s_x = self.level.content.shape[0]
+        self.s_y = self.level.content.shape[1]
+        self.start = self.level.get_starting_point_position()
+        self.end = (9, 9)
+
     def get_heuristic(self, cell):
         return 10 * (abs(cell[0] - self.end[0]) + abs(cell[1] - self.end[1]))
 

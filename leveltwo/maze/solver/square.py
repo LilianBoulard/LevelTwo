@@ -76,13 +76,6 @@ class MazeSolverSquare(MazeSolver):
     # Astar Section
     def astar(self) -> None:
         print("A*")
-        self.opened = []
-        heapq.heapify(self.opened)
-        self.closed = set()
-        self.cells = self.level.content
-        self.s_x = self.level.content.shape[0]
-        self.s_y = self.level.content.shape[1]
-        self.start = self.level.get_starting_point_position()
-        self.end = (9,9)
+
 
 
