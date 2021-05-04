@@ -171,4 +171,5 @@ class Maze:
         """
         searching_for = self.get_bounds(x, y)
         cell_index = np.where((self.cells_coordinates_matrix == searching_for).all(axis=2))
+        print(int(cell_index[0]), int(cell_index[1]))
         return int(cell_index[0]), int(cell_index[1])

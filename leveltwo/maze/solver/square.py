@@ -1,3 +1,5 @@
+import heapq
+
 import pygame
 
 from .base import MazeSolver
@@ -70,3 +72,22 @@ class MazeSolverSquare(MazeSolver):
 
     def breadth_first_search(self) -> None:
         pass
+
+    def recursive_walk(self, x, y):
+        if self.level.content[x][y] == 3:
+            print('end %d,%d' % (x, y))
+            return True
+        elif self.level.content[x][y] == 4:
+            print('wall %d,%d' % (x, y))
+            return False
+        elif self.level.content[x][y] == 7:
+            print('visited %d,%d' % (x, y))
+            return False
+        print("empty")
+        self.level.content[x][y] = 7
+        if ((x < len(self.level.content) - 1 and self.recursive_walk(x + 1, y))
+                or (y > 0 and self.recursive_walk(x, y - 1))
+                or (x > 0 and self.recursive_walk(x - 1, y))
+                or (y < len(self.level.content) - 1 and self.recursive_walk(x, y + 1))):
+                return True
+        return False

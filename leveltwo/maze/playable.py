@@ -14,8 +14,11 @@ class MazePlayable(Maze):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         starting_point_location = self.level.get_starting_point_position()
+        x = starting_point_location[0]
+        y = starting_point_location[1]
+        print(x , y)
         self.character = Character(*starting_point_location)
-        self.solver = MazeSolverSquare(self.level, self.character)
+        self.solver = MazeSolverSquare(self.level, self.character).recursive_walk(x, y)
 
     def draw_character(self):
         # Compute coordinates
