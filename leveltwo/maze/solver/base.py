@@ -11,3 +11,11 @@ class MazeSolver:
 
         db = Database()
         self.objects = db.get_all_objects()
+
+        # State is meant to store the state of each iteration of an algorithm.
+        self.state = {}
+
+        self._running: bool = True
+
+    def is_running(self) -> bool:
+        return self._running
