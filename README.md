@@ -9,8 +9,19 @@ It aims at exploring:
 - Video game development
 - Graphical interfaces
 - Data structures
+- Database manipulation
 - Some form of Artificial Intelligence, especially pathfinding and decision trees
 - Procedural generation
+
+## Includes
+
+- Comprehensible, object-oriented architecture
+- Flexible system
+- Hexagonal ([bestagon](https://youtu.be/thOifuHs6eY)) maze
+- Live editor
+- Pathfinding algorithms
+- The possibility to solve the maze manually
+- Replay feature
 
 ## Team
 - [Lilian BOULARD](https://lilian.boulard.fr/)
@@ -29,7 +40,9 @@ Then, `cd` into the `LevelTwo` directory, and install the requirements with
 
 *Note: we advise you use a virtual environment for this*
 
-Finally, launch `run.py` !
+To insert the initial values into the database, such as default objects and levels, launch ``insert_all.py``.
+
+Finally, open ``play.py`` to play and ``editor.py`` to edit/create levels !
 
 ## Organization
 
