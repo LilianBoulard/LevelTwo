@@ -1,3 +1,5 @@
+from tkinter import Tk
+from tkinter import messagebox
 from typing import List, Tuple
 
 from ..base import Tremaux, Deadend, Visited
@@ -83,7 +85,14 @@ class TremauxSquare(Tremaux):
 
         # cells[0] selects the first cell
         # [1] selects only the cell's coordinates
-        next_cell: Tuple[int, int] = cells[0][1]
+        try:
+            next_cell: Tuple[int, int] = cells[0][1]
+        except IndexError:
+            # We could not find any resolution to the maze.
+            Tk().wm_withdraw()
+            messagebox.showwarning('No solution !', f'Could not find any solution to the maze !')
+            self._running = False
+
         next_cell_object: GenericObject = self.level.object_map[next_cell]
 
         # As we are about to leave this cell, we mark it as visited.

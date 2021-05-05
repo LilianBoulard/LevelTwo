@@ -310,7 +310,7 @@ class MazeEditable(Maze, ABC):
                     for object_name, v in anomalies.items()
                 ]
             )
-            messagebox.showwarning('WARNING', f'Got errors: \n{formatted_anomalies}')
+            messagebox.showwarning('Anomalies', f'Got errors: \n{formatted_anomalies}')
             pass
 
     def cancel(self) -> None:
