@@ -182,7 +182,7 @@ class Database:
             session.add(level_dbo)
             # Refresh the session to get the inserted level id
             session.flush()
-            session.refresh()
+            session.refresh(level_dbo)
             level_id = level_dbo.id
         # Next, add the level's content
         s_x, s_y = level.content.shape
