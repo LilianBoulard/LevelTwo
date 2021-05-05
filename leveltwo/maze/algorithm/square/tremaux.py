@@ -92,6 +92,7 @@ class TremauxSquare(Tremaux):
             Tk().wm_withdraw()
             messagebox.showwarning('No solution !', f'Could not find any solution to the maze !')
             self._running = False
+            return
 
         next_cell_object: GenericObject = self.level.object_map[next_cell]
 
