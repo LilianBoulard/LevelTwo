@@ -5,13 +5,15 @@ from ..base import Manual
 from ....enums import Effects
 
 
-class ManualSquare(Manual):
+class ManualHexagonal(Manual):
 
     inputs = {
         'up': pygame.key.key_code('Z'),
-        'left': pygame.key.key_code('Q'),
+        'left-up': pygame.key.key_code('A'),
+        'left-down': pygame.key.key_code('Q'),
         'down': pygame.key.key_code('S'),
-        'right': pygame.key.key_code('D'),
+        'right-down': pygame.key.key_code('D'),
+        'right-up': pygame.key.key_code('E'),
     }
 
     def run_one_step(self, key) -> None:
@@ -19,17 +21,17 @@ class ManualSquare(Manual):
             return
 
         if key == self.inputs['up']:
-            # Go up
             self.move_character(0)
-        elif key == self.inputs['left']:
-            # Go left
+        elif key == self.inputs['left-up']:
             self.move_character(1)
-        elif key == self.inputs['down']:
-            # Go down
+        elif key == self.inputs['left-down']:
             self.move_character(2)
-        elif key == self.inputs['right']:
-            # Go right
+        elif key == self.inputs['down']:
             self.move_character(3)
+        elif key == self.inputs['right-down']:
+            self.move_character(4)
+        elif key == self.inputs['right-up']:
+            self.move_character(5)
 
     def move_character(self, direction: int, amount: int = 1) -> None:
         """
@@ -38,13 +40,15 @@ class ManualSquare(Manual):
         :param int direction: Direction the character should move to.
                               Mapping:
                               0: up
-                              1: left
-                              2: down
-                              3: right
+                              1: left-up
+                              2: left-down
+                              3: down
+                              4: right-down
+                              5: right-up
         :param int amount: How many cells it will try to move. Default is 1.
         """
-        if direction not in range(4):
-            raise ValueError(f'Invalid direction {direction!r}, should be an integer between 0 and 3 included.')
+        if direction not in range(6):
+            raise ValueError(f'Invalid direction {direction!r}, should be an integer between 0 and 5 included.')
 
         new_x, new_y = self.character.location
 
@@ -52,10 +56,16 @@ class ManualSquare(Manual):
             if direction == 0:
                 new_y -= 1
             elif direction == 1:
+                new_y -= 1
                 new_x -= 1
             elif direction == 2:
-                new_y += 1
+                new_x -= 1
             elif direction == 3:
+                new_y += 1
+            elif direction == 4:
+                new_y += 1
+                new_x += 1
+            elif direction == 5:
                 new_x += 1
 
             # Check if new coords are in the available space
@@ -63,6 +73,8 @@ class ManualSquare(Manual):
             if 0 <= new_x < max_x and 0 <= new_y < max_y:
                 # Get the object which is on our path
                 next_step_cell_object_id = self.level.content[new_x, new_y]
+                if next_step_cell_object_id == 0:  # 0 is an invalid cell
+                    continue
                 next_step_cell_object = self.objects[next_step_cell_object_id - 1]
 
                 if next_step_cell_object.traversable:

@@ -1,2 +1,2 @@
-from .tremaux import Tremaux
-from .manual import Manual
+from .tremaux import TremauxSquare
+from .manual import ManualSquare

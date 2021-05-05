@@ -6,6 +6,8 @@ import numpy as np
 from tkinter import Tk
 from tkinter import messagebox
 
+from time import sleep
+from datetime import datetime
 from typing import Tuple, Optional, Dict, List
 
 from ..test import Test
@@ -14,7 +16,7 @@ from ..database import Database
 from ..level import GenericLevel
 from ..character import Character
 from ..sprites.object_to_color import ObjectToColor
-
+from .algorithm.base import MazeSolvingAlgorithm, Manual
 
 BoundType = Tuple[int, int, int, int]
 
@@ -42,7 +44,7 @@ class Maze:
         db = Database()
         self.objects = db.get_all_objects()
 
-        self.cells_coordinates_matrix = np.empty((self.level.content.shape[0], self.level.content.shape[1], 4))
+        self.cells_coordinates_matrix = self.init_cell_coordinates_matrix()
         self.viewports: Dict[str, Viewport] = {}
 
         self.screen_size = self.parent.screen_size
@@ -83,31 +85,11 @@ class Maze:
     def adjust_style(self) -> None:
         self.screen.fill(Colors.WHITE)  # Set the background color
 
+    def init_cell_coordinates_matrix(self) -> np.array:
+        raise NotImplementedError()
+
     def get_z(self) -> Tuple[int, int]:
-        """
-        Computes `z`, which is the size each cell has on the screen (in pixels).
-        """
-        x, y = self.screen_size
-
-        x_cells, y_cells = self.level.content.shape
-
-        # Calculate the maximum z on both axis.
-        # Note: Using a round division might produce some unwanted margins around the edges,
-        # So we calculate the new y and x, and resize the window to these later on.
-        calculated_z_x = x // x_cells
-        calculated_z_y = y // y_cells
-
-        # Check if projecting each z on the other axis works.
-        # If it doesn't for one, return the other.
-        # If it does for both, return the largest.
-        if calculated_z_x * y_cells > y:
-            z = calculated_z_y
-        elif calculated_z_y * x_cells > x:
-            z = calculated_z_x
-        else:
-            z = max(calculated_z_x, calculated_z_y)
-
-        return z, z
+        raise NotImplementedError()
 
     def draw_grid(self) -> None:
         """
@@ -167,10 +149,7 @@ class Maze:
         return int(cell_index[0]), int(cell_index[1])
 
     def get_cell_center(self, x: int, y: int) -> Tuple[int, int]:
-        origin_x, origin_y, end_x, end_y = self.cells_coordinates_matrix[x, y]
-        center_x = origin_x + ((end_x - origin_x) // 2)
-        center_y = origin_y + ((end_y - origin_y) // 2)
-        return center_x, center_y
+        raise NotImplementedError()
 
 
 class MazeEditable(Maze, ABC):
@@ -316,21 +295,22 @@ class MazeEditable(Maze, ABC):
             return
 
     def save(self) -> None:
-        all_objects_in_bounds: bool = all(
-            [
-                self.level.is_object_occurrences_in_limits(obj)
-                for obj in self.objects
-            ]
-        )
-        if all_objects_in_bounds:
+        anomalies = self.level.get_objects_occurrences_anomalies(self.objects)
+        if len(anomalies) == 0:
             db = Database()
             db.update_level_content(self.level)
             self._running = False
 
         else:
             # Add popup to signal the issue
-            Tk().wm_withdraw()  # to hide the main window
-            messagebox.showwarning('WARNING', 'Please add a starting point')
+            Tk().wm_withdraw()
+            formatted_anomalies = '\n'.join(
+                [
+                    f"{v['min']} < {object_name} ({v['current']}) < {v['max']}"
+                    for object_name, v in anomalies.items()
+                ]
+            )
+            messagebox.showwarning('WARNING', f'Got errors: \n{formatted_anomalies}')
             pass
 
     def cancel(self) -> None:
@@ -346,14 +326,6 @@ class MazePlayable(Maze, ABC):
         self.db = Database()
         objects = self.db.get_all_objects()
         self.level.set_objects(objects)
-
-    def draw_character(self) -> None:
-        # Compute coordinates
-        x, y = self.character.location
-        center_x, center_y = self.get_cell_center(x, y)
-        # Draw circle
-        z, z = self.get_z()
-        pygame.draw.circle(self.screen, Colors.RED, (center_x, center_y), z * 0.8 // 2)
 
     def draw(self) -> None:
         self.adjust_screen(self.draw)
@@ -399,3 +371,55 @@ class MazePlayable(Maze, ABC):
             pygame.display.update()
 
         pygame.time.delay(800)
+
+    def run(self, algorithm_class) -> None:
+        """
+        Main loop.
+        """
+        save: bool = False
+        algo: MazeSolvingAlgorithm = algorithm_class(self.level, self.character)
+        manual: bool = isinstance(algo, Manual)
+
+        self.draw()
+        while self._running:
+            key = None
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self._running = False
+                    break
+                if event.type == pygame.VIDEORESIZE:
+                    self.resize(event.w, event.h, self.draw)
+                if manual:
+                    # If on manual mode (human-controller)
+                    if event.type == pygame.KEYDOWN:
+                        key = event.key
+
+            # Keyword arguments to pass to the algorithm iteration.
+            kwargs = {}
+
+            if isinstance(algo, Manual):
+                kwargs.update({
+                    'key': key
+                })
+
+            # If not human-controller, advance the algorithm one step.
+            algo.run_one_step(**kwargs)
+            self.draw()
+            if not algo.is_running():
+                save = True
+                self._running = False
+
+            if not manual:
+                sleep(0.2)
+
+            pygame.display.update()
+
+        if save:
+            # If we finished the level one way or another, we'll save the run in the database.
+            test = Test(identifier=None,
+                        level_id=self.level.identifier,
+                        algorithm=algo.name,
+                        steps=self.character.path,
+                        run_date=datetime.now())
+            self.db.store_test(test)
