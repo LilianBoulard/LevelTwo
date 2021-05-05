@@ -1,6 +1,6 @@
-from ....database import Database
-from ....level import GenericLevel
-from ....character import Character
+from ...database import Database
+from ...level import GenericLevel
+from ...character import Character
 
 
 class MazeSolvingAlgorithm:

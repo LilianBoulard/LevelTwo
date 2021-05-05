@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from .base import MazeSolvingAlgorithm
+from ..base import MazeSolvingAlgorithm
 
 from ....object import GenericObject
 from ....database.init.default_objects import Wall

@@ -4,8 +4,8 @@ import pygame_menu
 from .config import Config
 from .database import Database
 from .level import GenericLevel
-from .maze.editable import MazeEditable
-from .maze.playable import MazePlayable
+from .maze.square import MazeEditableSquare
+from .maze.square import MazePlayableSquare
 
 from .maze.algorithm.square import Tremaux, Manual
 
@@ -74,7 +74,7 @@ class LevelEditor(Display):
     def edit(self):
         # Get level from database
         level = self.db.construct_level(self.level_selected)
-        maze = MazeEditable(parent_display=self, level=level)
+        maze = MazeEditableSquare(parent_display=self, level=level)
         maze.run()
         self.display_menu()
 
@@ -96,7 +96,7 @@ class LevelEditor(Display):
         # Create new level
         size = (self.new_level_size, self.new_level_size)
         new_level = GenericLevel.create_new_level(size)
-        maze = MazeEditable(parent_display=self, level=new_level)
+        maze = MazeEditableSquare(parent_display=self, level=new_level)
         maze.run()
         self.display_menu()
 
@@ -147,14 +147,14 @@ class Play(Display):
 
     def play(self):
         level = self.db.construct_level(self.level_selected)
-        maze = MazePlayable(parent_display=self, level=level)
+        maze = MazePlayableSquare(parent_display=self, level=level)
         maze.run(self.algorithm_selected)
         self.display_menu()
 
     def rerun(self):
 
         def run_test(t):
-            maze = MazePlayable(parent_display=self, level=level)
+            maze = MazePlayableSquare(parent_display=self, level=level)
             maze.rerun(t)
             self.display_menu()
 

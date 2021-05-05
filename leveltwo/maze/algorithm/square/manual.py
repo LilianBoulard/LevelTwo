@@ -1,6 +1,6 @@
 import pygame
 
-from .base import MazeSolvingAlgorithm
+from ..base import MazeSolvingAlgorithm
 
 from ....enums import Effects
 
@@ -65,7 +65,6 @@ class Manual(MazeSolvingAlgorithm):
                 # Get the object which is on our path
                 next_step_cell_object_id = self.level.content[new_x, new_y]
                 next_step_cell_object = self.objects[next_step_cell_object_id - 1]
-                # We remove one because objects are 1-indexed
 
                 if next_step_cell_object.traversable:
                     self.character.move_and_handle_object_effect(new_x, new_y, next_step_cell_object)
