@@ -46,7 +46,7 @@ class LevelEditor(Display):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.level_selected = 1  # 1-indexed
-        self.new_level_size = 20
+        self.new_level_size = 10
         self.display_menu()
 
     def display_menu(self):
@@ -89,7 +89,12 @@ class LevelEditor(Display):
         menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
         menu.add.text_input('Maze name : ')
         menu.add.selector('Size : ',
-                          [('Small', 10), ('Medium', 20), ('Large', 30)],
+                          [
+                              ('Small', 10),
+                              ('Medium', 20),
+                              ('Large', 30),
+                              ('Very large', 30)
+                          ],
                           onchange=on_size_change)
         menu.add.button('Create', self.create_new_level)
         menu.add.button('Cancel', self.display_menu)
