@@ -44,6 +44,8 @@ To insert the initial values into the database, such as default objects and leve
 
 Finally, open ``play.py`` to play and ``editor.py`` to edit/create levels !
 
+Note: keyboard controls as well as mechanics are explained in ``docs/gameplay.md``.
+
 ## Organization
 
 Trello board : https://trello.com/b/lN0r08OH/leveltwo
