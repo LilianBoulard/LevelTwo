@@ -254,6 +254,25 @@ class MazeEditable(Maze, ABC):
         cancel_button = self.screen.blit(cancel_label, (cancel_label_x, manipulation_labels_y))
         self.manipulation_buttons.update({'cancel': cancel_button})
 
+        # We'll also display two dates:
+        # 1. The level creation date
+        # 2. The last time it was modified
+
+        creation_intro_label = label.render(f"Created on", True, Colors.BLACK)
+        creation_label = label.render(f'{self.level.creation_date}', True, Colors.BLACK)
+        creation_intro_label_y = viewport_end_y - n - 100
+        creation_label_y = creation_intro_label_y + creation_intro_label.get_height()
+
+        last_modified_intro_label = label.render("Last modified on", True, Colors.BLACK)
+        last_modified_label = label.render(f"{self.level.last_modification_date}", True, Colors.BLACK)
+        last_modified_intro_label_y = creation_label_y + creation_label.get_height()
+        last_modified_label_y = last_modified_intro_label_y + last_modified_intro_label.get_height()
+
+        self.screen.blit(creation_intro_label, (x, creation_intro_label_y))
+        self.screen.blit(creation_label, (x, creation_label_y))
+        self.screen.blit(last_modified_intro_label, (x, last_modified_intro_label_y))
+        self.screen.blit(last_modified_label, (x, last_modified_label_y))
+
     def get_button_bounds(self, x: int, y: int, z: Tuple[int, int]) -> BoundType:
         """
         Given `x` and `y` (coordinates), return a 4-tuple of integers
