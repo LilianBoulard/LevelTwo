@@ -17,7 +17,7 @@ It aims at exploring:
 
 - Comprehensible, object-oriented architecture
 - Flexible system
-- Hexagonal ([bestagon](https://youtu.be/thOifuHs6eY)) maze
+- Hexagonal ([bestagonal](https://youtu.be/thOifuHs6eY)) maze
 - Live editor
 - Pathfinding algorithms
 - The possibility to solve the maze manually
@@ -42,7 +42,7 @@ Then, `cd` into the `LevelTwo` directory, and install the requirements with
 
 To insert the initial values into the database, such as default objects and levels, launch ``insert_all.py``.
 
-Finally, open ``play.py`` to play and ``editor.py`` to edit/create levels !
+Finally, open ``play.py`` to play and ``level_editor.py`` to edit/create levels !
 
 Note: keyboard controls as well as mechanics are explained in ``docs/gameplay.md``.
 
