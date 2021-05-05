@@ -91,6 +91,7 @@ class TremauxSquare(Tremaux):
             # We could not find any resolution to the maze.
             Tk().wm_withdraw()
             messagebox.showwarning('No solution !', f'Could not find any solution to the maze !')
+            self.character.append_location_to_path()
             self._running = False
             return
 
