@@ -36,14 +36,16 @@ class LevelDBO(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(64))
     author = Column(String(64))
+    disposition = Column(String(16))
     shape = Column(String(8))
     creation_date = Column(Date, default=datetime.utcnow())
     last_modification_date = Column(Date)
 
-    def __init__(self, name: str, author: str, shape: str,
+    def __init__(self, name: str, author: str, disposition: str, shape: str,
                  creation_date: datetime, last_modification_date: datetime):
         self.name = name
         self.author = author
+        self.disposition = disposition
         self.shape = shape
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date

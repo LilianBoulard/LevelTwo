@@ -9,6 +9,7 @@ from enum import Enum
 from PIL import Image
 
 from .enums import Effects
+from .database.models import ObjectDBO
 
 
 objects_sprites_directory: str = "../sprites/"
@@ -83,7 +84,7 @@ class GenericObject:
             self.__setattr__(key, value)
 
     @classmethod
-    def from_dbo(cls, dbo):
+    def from_dbo(cls, dbo: ObjectDBO):
         """
         Takes a Object Database Object (ObjectsDBO, see `database/models.py`),
         and creates a new GenericObject instance from the information it contains.
@@ -95,6 +96,14 @@ class GenericObject:
         min_instances = dbo.min_instances
         max_instances = dbo.max_instances
         return cls(identifier, name, effect, traversable, min_instances, max_instances)
+
+    def to_dbo(self) -> ObjectDBO:
+        name = self.name
+        effect = self.effect.value
+        traversable = self.traversable
+        min_instances = self.min_instances
+        max_instances = self.max_instances
+        return ObjectDBO(name, effect, traversable, min_instances, max_instances)
 
     @staticmethod
     def get_sprite(object_name: str) -> Image:

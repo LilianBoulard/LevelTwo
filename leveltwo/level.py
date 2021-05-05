@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from datetime import datetime
 
 from .object import GenericObject
@@ -10,11 +10,12 @@ from .utils import string_to_list, list_to_string
 
 class GenericLevel:
 
-    def __init__(self, identifier: int, name: str, author: str, content: np.array,
-                 creation_date: datetime, last_modification_date: datetime):
+    def __init__(self, identifier: Optional[int], name: str, author: str, disposition: str,
+                 content: np.array, creation_date: datetime, last_modification_date: datetime):
         self.identifier = identifier
         self.name = name
         self.author = author
+        self.disposition = disposition
         self.content = content
         self.creation_date = creation_date
         self.last_modification_date = last_modification_date
@@ -31,28 +32,30 @@ class GenericLevel:
         identifier = dbo.id
         name = dbo.name
         author = dbo.author
+        disposition = dbo.disposition
         content = np.zeros(tuple([int(v) for v in string_to_list(dbo.shape)]), dtype='int16')
         creation_date = dbo.creation_date
         last_modification_date = dbo.last_modification_date
-        return cls(identifier, name, author, content, creation_date, last_modification_date)
+        return cls(identifier, name, author, disposition, content, creation_date, last_modification_date)
 
     def to_dbo(self) -> LevelDBO:
         name = self.name
         author = self.author
+        disposition = self.disposition
         shape = list_to_string(self.content.shape)
         creation_date = datetime.now()
         last_modification_date = datetime.now()
-        return LevelDBO(name, author, shape, creation_date, last_modification_date)
+        return LevelDBO(name, author, disposition, shape, creation_date, last_modification_date)
 
     @classmethod
-    def create_new_level(cls, size: Tuple[int, int]):
+    def create_new_level(cls, size: Tuple[int, int], disposition: str):
         identifier = None
         name = 'New level'
         author = 'New user'
         content = np.ones(size, dtype='int16')
         creation_date = datetime.utcnow()
         last_modification_date = datetime.utcnow()
-        return cls(identifier, name, author, content, creation_date, last_modification_date)
+        return cls(identifier, name, author, disposition, content, creation_date, last_modification_date)
 
     def set_objects(self, objects: List[GenericObject]) -> None:
         self.objects = objects

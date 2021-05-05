@@ -4,7 +4,7 @@ Inserts the content of the example level into the database.
 
 from typing import List
 
-from .default_levels import example_level
+from .default_levels import all_levels
 
 from ..models import LevelContentDBO
 from ...level import GenericLevel
@@ -29,5 +29,6 @@ def insert_levels_content(db) -> None:
 
     # Add level content to the database
     with db.init_session() as session:
-        for cell in level_to_dbo_level(example_level):
-            session.add(cell)
+        for level in all_levels:
+            for cell in level_to_dbo_level(level):
+                session.add(cell)
