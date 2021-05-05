@@ -76,6 +76,7 @@ class LevelEditor(Display):
         level = self.db.construct_level(self.level_selected)
         maze = MazeEditable(parent_display=self, level=level)
         maze.run()
+        self.display_menu()
 
     def create(self):
 
@@ -97,6 +98,7 @@ class LevelEditor(Display):
         new_level = GenericLevel.create_new_level(size)
         maze = MazeEditable(parent_display=self, level=new_level)
         maze.run()
+        self.display_menu()
 
 
 class Play(Display):
@@ -147,12 +149,14 @@ class Play(Display):
         level = self.db.construct_level(self.level_selected)
         maze = MazePlayable(parent_display=self, level=level)
         maze.run(self.algorithm_selected)
+        self.display_menu()
 
     def rerun(self):
 
         def run_test(t):
             maze = MazePlayable(parent_display=self, level=level)
             maze.rerun(t)
+            self.display_menu()
 
         screen = self.get_screen()
         menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)

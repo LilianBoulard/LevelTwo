@@ -25,15 +25,21 @@ class MazeEditable(Maze):
         self.draw_grid()
         self.draw_toolbox()
 
+        toolbox_vp = self.viewports['toolbox']
+        toolbox_width = toolbox_vp.end_x - toolbox_vp.origin_x
+        self.adjust_screen(self.draw, right_margin=toolbox_width)
+
+        pygame.display.update()
+
     def get_toolbox_buttons_size(self) -> Tuple[int, int]:
         button_width = 100
         button_height = button_width // 2
         return button_width, button_height
 
     def get_toolbox_margins(self) -> Tuple[int, int, int, int]:
-        left_margin = 25
+        left_margin = 50
         top_margin = 0
-        right_margin = 25
+        right_margin = 50
         bottom_margin = 0
         return left_margin, top_margin, right_margin, bottom_margin
 
@@ -106,7 +112,7 @@ class MazeEditable(Maze):
         self.manipulation_buttons.update({'save': save_button})
 
         cancel_label = label.render("Cancel", True, Colors.BLACK)
-        cancel_label_x = x + save_label.get_width() + left_margin
+        cancel_label_x = viewport_end_x - cancel_label.get_width() - right_margin
         cancel_button = self.screen.blit(cancel_label, (cancel_label_x, manipulation_labels_y))
         self.manipulation_buttons.update({'cancel': cancel_button})
 
@@ -185,9 +191,8 @@ class MazeEditable(Maze):
                     self._running = False
                     break
 
-                if event.type == pygame.VIDEORESIZE:  # If the screen was resized.
-                    self.resize(event.w, event.h, self.draw())
-                    self.draw()
+                if event.type == pygame.VIDEORESIZE:
+                    self.resize(event.w, event.h, self.draw)
 
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 selected_viewport = self.get_selected_viewport(mouse_x, mouse_y)

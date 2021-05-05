@@ -31,9 +31,11 @@ class MazePlayable(Maze):
         x, y = self.character.location
         center_x, center_y = self.get_cell_center(x, y)
         # Draw circle
-        pygame.draw.circle(self.screen, Colors.RED, (center_x, center_y), 20)
+        z, z = self.get_z()
+        pygame.draw.circle(self.screen, Colors.RED, (center_x, center_y), z * 0.8 // 2)
 
     def draw(self) -> None:
+        self.adjust_screen(self.draw)
         self.draw_grid()
         self.draw_character()
         pygame.display.update()
@@ -101,7 +103,7 @@ class MazePlayable(Maze):
                     self._running = False
                     break
                 if event.type == pygame.VIDEORESIZE:
-                    self.resize(event.w, event.h, self.draw())
+                    self.resize(event.w, event.h, self.draw)
                 if manual:
                     # If on manual mode (human-controller)
                     if event.type == pygame.KEYDOWN:
@@ -123,7 +125,7 @@ class MazePlayable(Maze):
                 self._running = False
 
             if not manual:
-                sleep(0.5)
+                sleep(0.2)
 
             pygame.display.update()
 

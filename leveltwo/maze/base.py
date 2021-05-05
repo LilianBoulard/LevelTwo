@@ -31,7 +31,6 @@ class Maze:
     def __init__(self, parent_display, level):
         self.parent = parent_display
         self.level: GenericLevel = level
-        self.maze_shape = self.level.content.shape
 
         db = Database()
         self.objects = db.get_all_objects()
@@ -40,10 +39,13 @@ class Maze:
         self.viewports: Dict[str, Viewport] = {}
 
         self.screen_size = self.parent.screen_size
-        self.screen = pygame.display.set_mode(self.screen_size)
+        self.screen = self.get_screen()
         self.adjust_style()
 
         self._running: bool = True
+
+    def get_screen(self):
+        return pygame.display.set_mode(self.screen_size, pygame.RESIZABLE)
 
     def get_selected_viewport(self, x: int, y: int) -> Viewport:
         """
@@ -66,10 +68,10 @@ class Maze:
         :param callback: Function to call once the resizing has been performed.
         """
         self.screen_size = (x, y)
-        self.screen = pygame.display.set_mode(self.screen_size)
+        self.screen = self.get_screen()
         pygame.display.set_caption(self.level.name)  # Set the window title
-        callback()
         self.adjust_style()
+        callback()
 
     def adjust_style(self) -> None:
         self.screen.fill(Colors.WHITE)  # Set the background color
@@ -78,9 +80,9 @@ class Maze:
         """
         Computes `z`, which is the size each cell has on the screen (in pixels).
         """
-        x = self.screen_size[0]
-        y = self.screen_size[1]
-        x_cells, y_cells = self.maze_shape
+        x, y = self.screen_size
+
+        x_cells, y_cells = self.level.content.shape
 
         # Calculate the maximum z on both axis.
         # Note: Using a round division might produce some unwanted margins around the edges,
@@ -98,22 +100,13 @@ class Maze:
         else:
             z = max(calculated_z_x, calculated_z_y)
 
-        # remainder_x = x - (x_cells * z)
-        # remainder_y = y - (y_cells * z)
-
-        # if remainder_x > 0 or remainder_y > 0:
-        #     new_x = x - remainder_x
-        #     new_y = y - remainder_y
-        #     self.resize(new_x, new_y, self.draw_grid())
-
         return z, z
 
     def draw_grid(self) -> None:
         """
         Constructs the maze's grid and draws rectangles for each cell on the screen.
         """
-        z = self.get_z()
-        z_x, z_y = z
+        z_x, z_y = self.get_z()
         # On the x and y axis, how many cells we want
         s_x, s_y = self.level.content.shape
         for i_x in range(s_x):
@@ -142,6 +135,24 @@ class Maze:
         viewport_end_y = z_y * s_y
         grid_viewport = Viewport(viewport_name, (0, 0, viewport_end_x, viewport_end_y))
         self.viewports[viewport_name] = grid_viewport
+
+    def adjust_screen(self, callback, *, down_margin: int = 0, right_margin: int = 0) -> None:
+        """
+        Calculates the size each viewport should have on the screen,
+        and resize the window accordingly.
+        """
+        x, y = self.screen_size
+        z_x, z_y = self.get_z()
+
+        x_cells, y_cells = self.level.content.shape
+
+        remainder_x = x - (x_cells * z_x) - right_margin
+        remainder_y = y - (y_cells * z_y) - down_margin
+
+        if remainder_x > 0 or remainder_y > 0:
+            new_x = x - remainder_x
+            new_y = y - remainder_y
+            self.resize(new_x, new_y, callback)
 
     def get_bounds(self, x: int, y: int, z: Optional[Tuple[int, ...]] = None) -> BoundType:
         """
@@ -174,5 +185,4 @@ class Maze:
         """
         searching_for = self.get_bounds(x, y)
         cell_index = np.where((self.cells_coordinates_matrix == searching_for).all(axis=2))
-        print(int(cell_index[0]), int(cell_index[1]))
         return int(cell_index[0]), int(cell_index[1])
