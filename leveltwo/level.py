@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Generator
 from datetime import datetime
 
 from .object import GenericObject
@@ -60,6 +60,13 @@ class GenericLevel:
     def set_objects(self, objects: List[GenericObject]) -> None:
         self.objects = objects
 
+    def iterate_over_shape(self) -> Generator[Tuple[int, int], None, None]:
+        s_x, s_y = self.content.shape
+        for x in range(s_x):
+            for y in range(s_y):
+                if self.content[x, y] != 0:
+                    yield x, y
+
     def construct_object_content(self):
         """
         Takes the content of the level, and converts the integers to GenericObjects.
@@ -87,6 +94,17 @@ class GenericLevel:
         """
         occurrences = self.get_number_of_objects_in(obj.identifier)
         return obj.min_instances <= occurrences <= obj.max_instances
+
+    def get_objects_occurrences_anomalies(self, objects: List[GenericObject]) -> dict:
+        anomalies = {}
+        for obj in objects:
+            if not self.is_object_occurrences_in_limits(obj):
+                anomalies.update({obj.name: {
+                    'current': self.get_number_of_objects_in(obj.identifier),
+                    'min': obj.min_instances,
+                    'max': obj.max_instances
+                }})
+        return anomalies
 
     def set_cell_object(self, x: int, y: int, obj: GenericObject) -> None:
         if self.get_number_of_objects_in(obj.identifier) < obj.max_instances:
