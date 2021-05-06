@@ -3,8 +3,8 @@ from tkinter import messagebox
 from typing import List, Tuple
 
 from ..base import Tremaux, Deadend, Visited
-from ....object import GenericObject
-from ....database.init.default_objects import Wall
+from ...object import GenericObject
+from ...database.init.default_objects import Wall
 
 
 class TremauxSquare(Tremaux):
@@ -40,7 +40,11 @@ class TremauxSquare(Tremaux):
 
         adjacent_cells = [up_cell, left_cell, down_cell, right_cell]
 
-        available_cells: List[Tuple[GenericObject, Tuple[int, int]]] = [(obj, pos) for obj, pos in adjacent_cells if obj.traversable]
+        available_cells: List[Tuple[GenericObject, Tuple[int, int]]] = [
+            (obj, pos)
+            for obj, pos in adjacent_cells
+            if obj.traversable
+        ]
 
         max_x, max_y = self.level.content.shape
         traversable_cells = [(obj, (x, y)) for obj, (x, y) in available_cells if 0 <= x < max_x and 0 <= y < max_y]

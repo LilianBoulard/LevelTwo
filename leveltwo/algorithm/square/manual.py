@@ -2,7 +2,7 @@ import pygame
 
 from ..base import Manual
 
-from ....enums import Effects
+from ...enums import Effects
 
 
 class ManualSquare(Manual):

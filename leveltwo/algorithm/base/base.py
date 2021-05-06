@@ -1,7 +1,7 @@
-from ....object import GenericObject
-from ....database import Database
-from ....level import GenericLevel
-from ....character import Character
+from ...object import GenericObject
+from ...database import Database
+from ...level import GenericLevel
+from ...character import Character
 
 
 class Visited(GenericObject):

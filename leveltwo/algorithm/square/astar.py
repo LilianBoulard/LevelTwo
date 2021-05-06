@@ -1,6 +1,6 @@
 import heapq
 
-from leveltwo.maze.algorithm.base.base import MazeSolvingAlgorithm
+from ..base import MazeSolvingAlgorithm
 
 
 class Astar(MazeSolvingAlgorithm):

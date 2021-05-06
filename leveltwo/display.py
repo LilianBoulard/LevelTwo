@@ -7,10 +7,10 @@ from .level import GenericLevel
 
 from .maze.square import MazeEditableSquare
 from .maze.square import MazePlayableSquare
-from .maze.algorithm.square import TremauxSquare, ManualSquare
+from .algorithm.square import TremauxSquare, ManualSquare
 
 from .maze.hexagonal import MazePlayableHexagonal
-from .maze.algorithm.hexagonal import ManualHexagonal
+from .algorithm.hexagonal import ManualHexagonal
 
 from typing import Tuple
 
