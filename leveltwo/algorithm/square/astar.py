@@ -1,15 +1,19 @@
 import heapq
 
 from ..base import MazeSolvingAlgorithm
+from ...object import GenericObject
 
-class Cell():
-    def __init__(self, x, y):
+
+class Cell:
+    def __init__(self, x, y, traversable):
         self.x = x
         self.y = y
+        self.traversable = traversable
         self.parent = None
         self.g = 0
         self.h = 0
         self.f = 0
+
 
 class Astar(MazeSolvingAlgorithm):
 
@@ -20,28 +24,35 @@ class Astar(MazeSolvingAlgorithm):
         self.opened = []
         heapq.heapify(self.opened)
         self.closed = set()
-        self.cells = self.level.content
+        self.cells = []
         self.s_x = self.level.content.shape[0]
         self.s_y = self.level.content.shape[1]
-        self.start = self.level.get_starting_point_position()
-        self.end = self.level.get_arrival_point_position()
+        self.start = Cell(self.level.get_starting_point_position()[0],
+                          self.level.get_starting_point_position()[1],
+                          traversable=True)
+        self.end = Cell(self.level.get_arrival_point_position()[0],
+                        self.level.get_arrival_point_position()[1],
+                        traversable=True)
+        for x, y in self.level.iterate_over_shape():
+            cell: GenericObject = self.level.content[x, y]
+            self.cells.append(Cell(x, y, traversable=cell.traversable))
 
     def get_heuristic(self, cell):
-        return 10 * (abs(cell[0] - self.end[0]) + abs(cell[1] - self.end[1]))
+        return 10 * (abs(cell.x - self.end[0]) + abs(cell.x - self.end[1]))
 
     def get_cell(self, x, y):
-        return self.cells[[0] * self.s_x + [1]]
+        return self.cells[x * self.s_x + y]
 
     def get_adjacent(self, cell):
         cells = []
-        if cell[0] < self.s_y - 1:
-            cells.append(self.get_cell(cell[0] + 1, cell[1]))
-        if cell[1] > 0:
-            cells.append(self.get_cell(cell[0], cell[1] - 1))
+        if cell.x < self.s_y - 1:
+            cells.append(self.get_cell(cell.x + 1, cell.y))
+        if cell.y > 0:
+            cells.append(self.get_cell(cell.x, cell.y - 1))
         if cell.x > 0:
-            cells.append(self.get_cell(cell[0] - 1, cell[1]))
+            cells.append(self.get_cell(cell.x - 1, cell.y))
         if cell.y < self.s_x:
-            cells.append(self.get_cell(cell[0], cell[1] + 1))
+            cells.append(self.get_cell(cell.x, cell.y + 1))
         return cells
 
     def update_cell(self, adj, cell):
@@ -59,9 +70,10 @@ class Astar(MazeSolvingAlgorithm):
                 print("END")
             adj_cells = self.get_adjacent(cell)
             for adj_cell in adj_cells:
-                if (adj_cell != 4 or 6) and adj_cell not in self.closed:
-                    if adj_cell.f > cell.g + 10:
-                        self.update_cell(adj_cell, cell)
+                if adj_cell.traversable and adj_cell not in self.closed:
+                    if(adj_cell.f, adj_cell) in self.opened:
+                        if adj_cell.g > cell.g + 10:
+                            self.update_cell(adj_cell, cell)
                 else:
                     self.update_cell(adj_cell, cell)
                     heapq.heappush(self.opened, (adj_cell.f, adj_cell))
