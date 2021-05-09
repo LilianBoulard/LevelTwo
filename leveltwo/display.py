@@ -10,7 +10,7 @@ from .level import GenericLevel
 
 from .maze.square import MazeEditableSquare
 from .maze.square import MazePlayableSquare
-from .algorithm.square import TremauxSquare, ManualSquare
+from .algorithm.square import TremauxSquare, ManualSquare, AstarSquare
 
 from .maze.hexagonal import MazePlayableHexagonal
 from .algorithm.hexagonal import ManualHexagonal
@@ -183,7 +183,8 @@ class Play(Display):
             default_algo = ManualSquare
             algorithms = [
                 ('Manual', ManualSquare),
-                ('Trémaux', TremauxSquare)
+                ('Trémaux', TremauxSquare),
+                ('Astar', AstarSquare)
             ]
         elif level.disposition == 'hexagonal':
             default_algo = ManualHexagonal

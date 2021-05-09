@@ -1,6 +1,8 @@
 import heapq
+import logging
 
-from ..base import MazeSolvingAlgorithm
+from ..base import Astar
+
 from ...object import GenericObject
 
 
@@ -15,7 +17,7 @@ class Cell:
         self.f = 0
 
 
-class Astar(MazeSolvingAlgorithm):
+class AstarSquare(Astar):
 
     name = "astar"
 
@@ -25,20 +27,17 @@ class Astar(MazeSolvingAlgorithm):
         heapq.heapify(self.opened)
         self.closed = set()
         self.cells = []
-        self.s_x = self.level.content.shape[0]
-        self.s_y = self.level.content.shape[1]
-        self.start = Cell(self.level.get_starting_point_position()[0],
-                          self.level.get_starting_point_position()[1],
-                          traversable=True)
-        self.end = Cell(self.level.get_arrival_point_position()[0],
-                        self.level.get_arrival_point_position()[1],
-                        traversable=True)
+        self.s_x, self.s_y = self.level.content.shape
+        start_x, start_y = self.level.get_starting_point_position()
+        self.start = Cell(start_x, start_y, traversable=True)
+        end_x, end_y = self.level.get_arrival_point_position()
+        self.end = Cell(end_x, end_y, traversable=True)
         for x, y in self.level.iterate_over_shape():
-            cell: GenericObject = self.level.content[x, y]
+            cell: GenericObject = self.level.object_map[x, y]
             self.cells.append(Cell(x, y, traversable=cell.traversable))
 
     def get_heuristic(self, cell):
-        return 10 * (abs(cell.x - self.end[0]) + abs(cell.x - self.end[1]))
+        return 10 * (abs(cell.x - self.end.x) + abs(cell.x - self.end.y))
 
     def get_cell(self, x, y):
         return self.cells[x * self.s_x + y]
@@ -61,22 +60,13 @@ class Astar(MazeSolvingAlgorithm):
         adj.parent = cell
         adj.f = adj.h + adj.g
 
-    def test(self):
-        cell = self.end
-        while cell.parent is not self.start:
-            cell = cell.parent
-            print('path: cell: %d,%d' % (cell.x, cell.y))
-
     def run_one_step(self):
         heapq.heappush(self.opened, (self.start.f, self.start))
         while len(self.opened):
             f, cell = heapq.heappop(self.opened)
             self.closed.add(cell)
             if cell is self.end:
-                print("END")
-            if cell is self.end:
-                self.test()
-                break
+                logging.info("End")
             adj_cells = self.get_adjacent(cell)
             for adj_cell in adj_cells:
                 if adj_cell.traversable and adj_cell not in self.closed:
