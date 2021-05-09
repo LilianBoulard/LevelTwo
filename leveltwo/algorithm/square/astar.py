@@ -40,22 +40,22 @@ class AstarSquare(Astar):
         return 10 * (abs(cell.x - self.end.x) + abs(cell.x - self.end.y))
 
     def get_cell(self, x, y):
-        return self.cells[x * self.s_x + y]
+        return self.cells[x * self.s_y + y]
 
     def get_adjacent(self, cell):
         cells = []
-        if cell.x < self.s_y - 1:
+        if cell.x < self.s_x - 1:
             cells.append(self.get_cell(cell.x + 1, cell.y))
         if cell.y > 0:
             cells.append(self.get_cell(cell.x, cell.y - 1))
         if cell.x > 0:
             cells.append(self.get_cell(cell.x - 1, cell.y))
-        if cell.y < self.s_x:
+        if cell.y < self.s_y - 1:
             cells.append(self.get_cell(cell.x, cell.y + 1))
         return cells
 
     def update_cell(self, adj, cell):
-        adj.g = 10
+        adj.g = cell.g + 10
         adj.h = self.get_heuristic(adj)
         adj.parent = cell
         adj.f = adj.h + adj.g
