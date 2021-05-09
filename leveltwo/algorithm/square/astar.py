@@ -61,6 +61,12 @@ class Astar(MazeSolvingAlgorithm):
         adj.parent = cell
         adj.f = adj.h + adj.g
 
+    def test(self):
+        cell = self.end
+        while cell.parent is not self.start:
+            cell = cell.parent
+            print('path: cell: %d,%d' % (cell.x, cell.y))
+
     def run_one_step(self):
         heapq.heappush(self.opened, (self.start.f, self.start))
         while len(self.opened):
@@ -68,6 +74,9 @@ class Astar(MazeSolvingAlgorithm):
             self.closed.add(cell)
             if cell is self.end:
                 print("END")
+            if cell is self.end:
+                self.test()
+                break
             adj_cells = self.get_adjacent(cell)
             for adj_cell in adj_cells:
                 if adj_cell.traversable and adj_cell not in self.closed:
