@@ -1,6 +1,9 @@
 import pygame
 import pygame_menu
 
+from tkinter import Tk
+from tkinter import messagebox
+
 from .config import Config
 from .database import Database
 from .level import GenericLevel
@@ -45,8 +48,10 @@ class LevelEditor(Display):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.level_selected = 1  # 1-indexed
-        self.new_level_size = 10
+        self.level_selected: int = 1  # 1-indexed
+        self.new_level_size: int = 10
+        self.new_maze_name: str = ''
+        self.new_maze_author: str = ''
         self.display_menu()
 
     def display_menu(self):
@@ -54,8 +59,17 @@ class LevelEditor(Display):
         def on_level_change(_: tuple, selection: int):
             self.level_selected = selection
 
+        def on_text_change(value: str, *args, **kwargs):
+            self.new_maze_author = value
+
         screen = self.get_screen()
         menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
+
+        # User name text input
+        menu.add.text_input('User name : ',
+                            default=self.new_maze_author,
+                            onchange=on_text_change,
+                            maxchar=16)
 
         # Level selector
         all_levels = self.db.get_all_levels()
@@ -86,14 +100,20 @@ class LevelEditor(Display):
         def on_size_change(_: tuple, selection: int):
             self.new_level_size = selection
 
+        def on_text_change(value: str, *args, **kwargs):
+            self.new_maze_name = value
+
         menu = pygame_menu.Menu(Config.project_name, *self.screen_size, theme=self.theme)
-        menu.add.text_input('Maze name : ')
+        menu.add.text_input('Maze name : ',
+                            default=self.new_maze_name,
+                            onchange=on_text_change,
+                            maxchar=16)
         menu.add.selector('Size : ',
                           [
                               ('Small', 10),
                               ('Medium', 20),
                               ('Large', 30),
-                              ('Very large', 30)
+                              ('Very large', 40)
                           ],
                           onchange=on_size_change)
         menu.add.button('Create', self.create_new_level)
@@ -101,9 +121,16 @@ class LevelEditor(Display):
         menu.mainloop(self.get_screen())
 
     def create_new_level(self):
-        # Create new level
+        if not self.new_maze_name or not self.new_maze_author:
+            Tk().wm_withdraw()
+            messagebox.showwarning('Cannot create maze', f'Missing user name and/or maze name.')
+            self.create()
+
         size = (self.new_level_size, self.new_level_size)
-        new_level = GenericLevel.create_new_level(size, 'square')
+        new_level = GenericLevel.create_new_level(size=size,
+                                                  name=self.new_maze_name,
+                                                  author=self.new_maze_author,
+                                                  disposition='square')
         maze = MazeEditableSquare(parent_display=self, level=new_level)
         maze.run()
         self.display_menu()

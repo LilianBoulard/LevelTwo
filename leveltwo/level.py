@@ -48,10 +48,8 @@ class GenericLevel:
         return LevelDBO(name, author, disposition, shape, creation_date, last_modification_date)
 
     @classmethod
-    def create_new_level(cls, size: Tuple[int, int], disposition: str):
+    def create_new_level(cls, name, author, size: Tuple[int, int], disposition: str):
         identifier = None
-        name = 'New level'
-        author = 'New user'
         content = np.ones(size, dtype='int16')
         creation_date = datetime.utcnow()
         last_modification_date = datetime.utcnow()
