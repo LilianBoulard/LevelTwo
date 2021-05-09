@@ -2,6 +2,14 @@ import heapq
 
 from ..base import MazeSolvingAlgorithm
 
+class Cell():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.parent = None
+        self.g = 0
+        self.h = 0
+        self.f = 0
 
 class Astar(MazeSolvingAlgorithm):
 
@@ -16,7 +24,7 @@ class Astar(MazeSolvingAlgorithm):
         self.s_x = self.level.content.shape[0]
         self.s_y = self.level.content.shape[1]
         self.start = self.level.get_starting_point_position()
-        self.end = (9, 9)
+        self.end = self.level.get_arrival_point_position()
 
     def get_heuristic(self, cell):
         return 10 * (abs(cell[0] - self.end[0]) + abs(cell[1] - self.end[1]))

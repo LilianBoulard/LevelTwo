@@ -47,7 +47,7 @@ class Wall(GenericObject):
         effect = Effects.NONE
         traversable = False
         min_instances = 25
-        max_instances = 100
+        max_instances = 1000
         super().__init__(4, name, effect, traversable, min_instances, max_instances)
 
 
