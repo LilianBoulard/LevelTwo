@@ -57,8 +57,9 @@ class AstarSquare(Astar):
             cells.append(self.get_cell(cell.x, cell.y + 1))
         return cells
 
-    def display_path(self):
+    def display_path(self, cell=Cell):
         cell = self.end
+        print(cell.x)
         path = [(cell.x, cell.y)]
         while cell.parent is not self.start:
             cell = cell.parent
@@ -69,43 +70,27 @@ class AstarSquare(Astar):
         return path
 
     def update_cell(self, adj, cell):
-        """Update adjacent cell.
-                @param adj adjacent cell to current cell
-                @param cell current cell being processed
-                """
         adj.g = cell.g + 10
         adj.h = self.get_heuristic(adj)
         adj.parent = cell
         adj.f = adj.h + adj.g
 
     def run_one_step(self):
-
-        """Solve maze, find path to ending cell.
-                @returns path or None if not found.
-                """
-        # add starting cell to open heap queue
         heapq.heappush(self.opened, (self.start.f, self.start))
         while len(self.opened):
-            # pop cell from heap queue
             f, cell = heapq.heappop(self.opened)
-            # add cell to closed list so we don't process it twice
             self.closed.add(cell)
-            # if ending cell, return found path
-            if cell is self.end:
-                return self.display_path()
-            # get adjacent cells for cell
+            if cell.x == self.end.x:
+                if cell.y == self.end.y:
+                    self.display_path()
             adj_cells = self.get_adjacent(cell)
             for adj_cell in adj_cells:
 
                 if adj_cell.traversable is True and adj_cell not in self.closed:
                     if (adj_cell.f, adj_cell) in self.opened:
-                        # if adj cell in open list, check if current path is
-                        # better than the one previously found
-                        # for this adj cell.
                         if adj_cell.g > cell.g + 10:
                             self.update_cell(adj_cell, cell)
                     else:
                         self.update_cell(adj_cell, cell)
                         print(cell.x, cell.y)
-                        # add adj cell to open list
                         heapq.heappush(self.opened, (adj_cell.f, adj_cell))
