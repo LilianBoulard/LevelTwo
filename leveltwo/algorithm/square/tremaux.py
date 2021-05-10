@@ -2,6 +2,7 @@ from tkinter import Tk
 from tkinter import messagebox
 from typing import List, Tuple
 
+
 from ..base import Tremaux, Deadend, Visited
 from ...object import GenericObject
 from ...database.init.default_objects import Wall

@@ -1,7 +1,8 @@
 import heapq
 import logging
-
+import time
 from ..base import Astar
+
 
 from ...object import GenericObject
 
@@ -77,26 +78,24 @@ class AstarSquare(Astar):
 
     def run_one_step(self):
         heapq.heappush(self.opened, (self.start.f, self.start))
-        while len(self.opened):
-            f, cell = heapq.heappop(self.opened)
-            self.closed.add(cell)
-            if cell.x == self.end.x:
-                if cell.y == self.end.y:
-                    print("end")
-                    break
-            adj_cells = self.get_adjacent(cell)
-            for adj_cell in adj_cells:
-
-                if adj_cell.traversable is True and adj_cell not in self.closed:
-                    if (adj_cell.f, adj_cell) in self.opened:
-                        if adj_cell.g > cell.g + 10:
-                            self.update_cell(adj_cell, cell)
-
-                    else:
-
+        f, cell = heapq.heappop(self.opened)
+        self.closed.add(cell)
+        if cell.x == self.end.x:
+            if cell.y == self.end.y:
+                print("end")
+                self._running = False
+        adj_cells = self.get_adjacent(cell)
+        for adj_cell in adj_cells:
+            if adj_cell.traversable and adj_cell not in self.closed:
+                if (adj_cell.f, adj_cell) in self.opened:
+                    if adj_cell.g > cell.g + 10:
                         self.update_cell(adj_cell, cell)
-                        print(cell.x, cell.y)
-
-                        heapq.heappush(self.opened, (adj_cell.f, adj_cell))
-        next_cell_object: GenericObject = self.level.object_map[cell.x,cell.y]
+                else:
+                    self.update_cell(adj_cell, cell)
+                    print(cell.x, cell.y)
+                    time.sleep(1)
+                    heapq.heappush(self.opened, (adj_cell.f, adj_cell))
+        next_cell_object: GenericObject = self.level.object_map[cell.x, cell.y]
         self.character.move_and_handle_object_effect(cell.x, cell.y, next_cell_object)
+
+
