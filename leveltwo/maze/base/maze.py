@@ -114,14 +114,5 @@ class Maze:
 
         return bounds
 
-    def get_clicked_cell_index(self, x: int, y: int) -> Tuple[int, int]:
-        """
-        Iterates through the cells matrix and returns the coordinates of the
-        one the user clicked on, based on the coordinates of his input.
-        """
-        searching_for = self.get_bounds(x, y)
-        cell_index = np.where((self.cells_coordinates_matrix == searching_for).all(axis=2))
-        return int(cell_index[0]), int(cell_index[1])
-
     def get_cell_center(self, x: int, y: int) -> Tuple[int, int]:
         raise NotImplementedError()

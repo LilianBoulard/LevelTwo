@@ -77,7 +77,6 @@ class GenericObject:
         self.traversable = traversable
         self.min_instances = min_instances
         self.max_instances = max_instances
-        # self.sprite = self.get_sprite(self.name)
 
         # Setting additional arguments as attributes.
         for key, value in kwargs.items():
@@ -104,12 +103,3 @@ class GenericObject:
         min_instances = self.min_instances
         max_instances = self.max_instances
         return ObjectDBO(name, effect, traversable, min_instances, max_instances)
-
-    @staticmethod
-    def get_sprite(object_name: str) -> Image:
-        """
-        Gets the sprite of an object from its name.
-        The sprite is stored as a PNG image.
-        """
-        path = os.path.join(objects_sprites_directory, object_name, ".png")
-        return Image(path)

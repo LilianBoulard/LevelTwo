@@ -7,11 +7,13 @@ from tkinter import messagebox
 from .config import Config
 from .database import Database
 from .level import GenericLevel
+from .exceptions import InvalidLevelType
 
 from .maze.square import MazeEditableSquare
 from .maze.square import MazePlayableSquare
 from .algorithm.square import TremauxSquare, ManualSquare, AstarSquare
 
+from .maze.hexagonal import MazeEditableHexagonal
 from .maze.hexagonal import MazePlayableHexagonal
 from .algorithm.hexagonal import ManualHexagonal
 
@@ -77,11 +79,9 @@ class LevelEditor(Display):
                           [(level.name, level.identifier) for level in all_levels],
                           onchange=on_level_change)
 
-        edit_args = []  # Positional args to be passed to the callback below.
-        menu.add.button('Edit', self.edit, *edit_args)
+        menu.add.button('Edit', self.edit)
 
-        create_args = []
-        menu.add.button('Create', self.create, *create_args)
+        menu.add.button('Create', self.create)
 
         menu.add.button('Quit', pygame_menu.events.EXIT)
 
@@ -91,7 +91,12 @@ class LevelEditor(Display):
     def edit(self):
         # Get level from database
         level = self.db.construct_level(self.level_selected)
-        maze = MazeEditableSquare(parent_display=self, level=level)
+        if level.disposition == 'square':
+            maze = MazeEditableSquare(parent_display=self, level=level)
+        elif level.disposition == 'hexagonal':
+            maze = MazeEditableHexagonal(parent_display=self, level=level)
+        else:
+            raise InvalidLevelType(level.disposition)
         maze.run()
         self.display_menu()
 
@@ -124,7 +129,7 @@ class LevelEditor(Display):
         if not self.new_maze_name or not self.new_maze_author:
             Tk().wm_withdraw()
             messagebox.showwarning('Cannot create maze', f'Missing user name and/or maze name.')
-            self.create()
+            self.create()  # Back to the parent menu
 
         size = (self.new_level_size, self.new_level_size)
         new_level = GenericLevel.create_new_level(size=size,
@@ -192,7 +197,7 @@ class Play(Display):
                 ('Manual', ManualHexagonal)
             ]
         else:
-            raise ValueError(f'Invalid level type {level.disposition!r}')
+            raise InvalidLevelType(level.disposition)
         self.algorithm_selected = default_algo
 
         menu.add.selector('Algorithm: ', algorithms, onchange=on_algorithm_change)
@@ -209,7 +214,7 @@ class Play(Display):
         elif level.disposition == 'hexagonal':
             maze = MazePlayableHexagonal(parent_display=self, level=level)
         else:
-            raise ValueError(f'Invalid level type {level.disposition!r}')
+            raise InvalidLevelType(level.disposition)
         maze.run(self.algorithm_selected)
         self.display_menu()
 
