@@ -1,3 +1,6 @@
+
+![LevelTwo logo](docs/leveltwo_logo.png "LevelTwo logo")
+
 # LevelTwo
 
 LevelTwo is a software engineering project part of our Bachelor's Degree.  
